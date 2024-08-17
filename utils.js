@@ -1,54 +1,100 @@
 
-function insert_header(header, values){
+function insert_header(header, item){
     const row = header.insertRow();
-    for (let j = 0; j < Object.keys(values).length; j++) {
-        if (document.getElementById(values[j]).checked) {
-            row.insertCell().outerHTML = `<th>${values[j]}</th>`;
+    keysss = Object.keys(item);
+    for (let j = 0; j < keysss.length; j++) {
+        key = keysss[j];
+        if (document.getElementById(key).checked) {
+            row.insertCell().outerHTML = `<th>${key}</th>`;
         }
     }
 }
-function insert_body(body, max_elem){
-    for (let i = 1; i < max_elem; i++) {
-        const row = body.insertRow();
-        for (let j = 0; j < Object.keys(listtttt[i]).length; j++) {
-            if (document.getElementById(listtttt[0][j]).checked) {
-                row.insertCell().textContent = listtttt[i][j];
-            }
+function insert_body(body){
+    displayed_elem_counter = 0
+    for (let i = 0; i < listtttt.length; i++) {
+        item = listtttt[i]
+        if(!check_if_obj_in_search_parameters(item)){
+            continue;
+        }
+        add_body_row(body, item)
+        
+        displayed_elem_counter += 1;
+        if(displayed_elem_counter > max_elem){
+            break;
         }
     }
 }
-function display_parameter_checkbox(){
-    const item_in_row = 5
 
-    if (document.contains(document.getElementById("table2"))) {
-        document.getElementById("table2").remove();
-    }   
-
-    const table = document.createElement('table');
-    table.setAttribute("id", "table2");
-    table.classList.add("table");
-    table.classList.add("table-striped");
-    var header = table.createTBody();
-
-    document.getElementById('parameters').innerHTML += `<div>Total: ${listtttt.length}</div>`;
-    for (let j = 0; j < Object.keys(listtttt[0]).length/item_in_row; j++) {
-        divvv = ''
-        const row = header.insertRow();
-        for (let k = 0; k < item_in_row; k++) {
-            let idx = (j*item_in_row)+k;
-            let name = listtttt[0][idx]
-            labelll = `<label for="${name}">${name}</label>`
-            inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
-            divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
-            row.insertCell().outerHTML = `<th>${divvv}</th>`;
-        }
-    }
-    document.getElementById("checkbox_parameters").appendChild(table);
-}
-function checked_by_default(){
-    checked_names = ["nazwa_inwestor","data_wplywu_wniosku","nazwa_zamierzenia_bud","kategoria", "nazwa_organu"]
+function check_default_checkboxes(){
     for (let i = 0; i < checked_names.length; i++) {
         document.getElementById(checked_names[i]).checked = true;
     }
 }
 
+function check_if_obj_in_search_parameters(item){
+    add_obj = true;
+    for (let k = 0; k < search_parameters.length; k++) {
+        search_parameters_key = Object.keys(search_parameters[k])[0];
+        search_parameters_value = search_parameters[k][search_parameters_key];
+
+        if(!item[search_parameters_key] || !item[search_parameters_key].includes(search_parameters_value)){
+            return false;
+        }
+    }
+    return true;
+}
+function add_body_row(body, item){
+    keysss = Object.keys(item);
+    const row = body.insertRow();
+    for (let j = 0; j < keysss.length; j++) {
+        key = keysss[j]
+        if (!document.getElementById(key).checked) {
+            continue;
+        }
+        row.insertCell().textContent = item[key];
+    }
+}
+
+
+function create_table(table_id){
+    if (document.contains(document.getElementById(table_id))) {
+        document.getElementById(table_id).remove();
+    }   
+
+    const table = document.createElement('table');
+    table.setAttribute("id", table_id);
+    table.classList.add("table");
+    table.classList.add("table-striped");
+    return table;
+}
+
+
+function delete_search_parameters(idx){
+    search_parameters.splice(idx, 1);
+    display_search_parameters_list();
+};
+
+function insert_search_parameters(){
+    keyyy = document.getElementById("insert_search_parameters_key").value;
+    valueeee = document.getElementById("insert_search_parameters_value").value;
+    search_parameters.push({[keyyy] : valueeee});
+    display_search_parameters_list();
+};
+
+function sort_data(){
+    listtttt.sort(function(a, b) { 
+        return b["data_wplywu_wniosku"].substring(0,4) - a["data_wplywu_wniosku"].substring(0,4);
+    })
+}
+
+function check_if_obj_has_correct_data(objjj){
+    if(objjj["data_wplywu_wniosku"] == undefined  || "2" != objjj["data_wplywu_wniosku"][0]){
+        return false;
+    }
+    for (let j = 0; j < headerssss.length; j++) {
+        if(objjj[headerssss[j]] == undefined){
+            return false
+        }
+    }
+    return true;
+}
