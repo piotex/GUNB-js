@@ -63,3 +63,62 @@ function display_search_parameters_list(){
 function display_total(){
     document.getElementById('total_value').innerHTML += `<div>Wczytano z pliku: ${listtttt.length}</div>`;
 }
+
+
+function display_organs_checkboxes(){
+    posible_organs = {}
+    for (let i = 0; i < listtttt.length; i++) {
+        organ_name = listtttt[i]["nazwa_organu"];
+        organ_name = organ_name.replace('"','').trim();
+        if(!(organ_name in posible_organs)){
+            posible_organs[organ_name] = 0
+        }
+    }
+
+    posible_organs = Object.keys(posible_organs)
+    posible_organs = posible_organs.sort(function(a, b) {
+        return a.localeCompare(b)
+    });
+
+    const item_in_row = 5
+    const table = create_table("table4")
+    var header = table.createTBody();
+
+    for (let j = 0; j < posible_organs.length/item_in_row; j++) {
+        divvv = ''
+        const row = header.insertRow();
+        for (let k = 0; k < item_in_row; k++) {
+            let idx = (j*item_in_row)+k;
+            if(idx < posible_organs.length){
+                let name = posible_organs[idx];
+                labelll = `<label for="${name}">${name}</label>`
+                inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
+                divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
+                row.insertCell().outerHTML = `<th>${divvv}</th>`;
+            }
+        }
+    }
+    document.getElementById("checkbox_organs").appendChild(table);
+};
+
+function display_category_checkboxes(){
+    const item_in_row = 5
+    const table = create_table("table5")
+    var header = table.createTBody();
+
+    for (let j = 0; j < posible_categories.length/item_in_row; j++) {
+        divvv = ''
+        const row = header.insertRow();
+        for (let k = 0; k < item_in_row; k++) {
+            let idx = (j*item_in_row)+k;
+            if(idx < posible_categories.length){
+                let name = posible_categories[idx];
+                labelll = `<label for="${name}">${name}</label>`
+                inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
+                divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
+                row.insertCell().outerHTML = `<th>${divvv}</th>`;
+            }
+        }
+    }
+    document.getElementById("checkbox_categories").appendChild(table);
+};

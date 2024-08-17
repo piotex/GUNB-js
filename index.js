@@ -1,11 +1,3 @@
-var listtttt = []
-var search_parameters = [{"data_wplywu_wniosku":"24-08"},{"nazwa_zam_budowlanego":"budynków"}]
-var checked_names = ["nazwa_inwestor","data_wplywu_wniosku","nazwa_zam_budowlanego","kategoria", "nazwa_organu"]
-var checked_organs = []
-
-var max_elem = 1000;
-var posible_organs = {}
-
 
 
 document.getElementById('file-input').addEventListener('change', (event) => {
@@ -41,11 +33,11 @@ document.getElementById('file-input').addEventListener('change', (event) => {
 
         display_total();
         display_parameter_checkbox();
-        check_default_checkboxes();
         display_organs_checkboxes();
         display_category_checkboxes();
         display_search_parameters_list();
         display_table();
+        check_default_checkboxes();
         
         var endTime = performance.now()
         console.log(`Time to display: ${endTime - startTime} milliseconds`)
@@ -53,75 +45,15 @@ document.getElementById('file-input').addEventListener('change', (event) => {
 
 });
 
-function display_organs_checkboxes(){
-    posible_organs = {}
-    for (let i = 0; i < listtttt.length; i++) {
-        organ_name = listtttt[i]["nazwa_organu"];
-        organ_name = organ_name.replace('"','').trim();
-        if(!(organ_name in posible_organs)){
-            posible_organs[organ_name] = 0
-        }
+
+function check_default_checkboxes(){
+    for (let i = 0; i < checked_names.length; i++) {
+        document.getElementById(checked_names[i]).checked = true;
     }
-
-    posible_organs = Object.keys(posible_organs)
-    posible_organs = posible_organs.sort(function(a, b) {
-        return a.localeCompare(b)
-    });
-
-    const item_in_row = 5
-    const table = create_table("table4")
-    var header = table.createTBody();
-
-    for (let j = 0; j < posible_organs.length/item_in_row; j++) {
-        divvv = ''
-        const row = header.insertRow();
-        for (let k = 0; k < item_in_row; k++) {
-            let idx = (j*item_in_row)+k;
-            if(idx < posible_organs.length){
-                let name = posible_organs[idx];
-                labelll = `<label for="${name}">${name}</label>`
-                inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
-                divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
-                row.insertCell().outerHTML = `<th>${divvv}</th>`;
-            }
-        }
+    for (let i = 0; i < checked_categories.length; i++) {
+        document.getElementById(checked_categories[i]).checked = true;
     }
-    document.getElementById("checkbox_organs").appendChild(table);
-};
-
-function display_category_checkboxes(){
-    return 1;
-    posible_organs = {}
-    for (let i = 0; i < listtttt.length; i++) {
-        organ_name = listtttt[i]["kategoria"];
-        organ_name = organ_name.replace('"','').trim();
-        if(!(organ_name in posible_organs)){
-            posible_organs[organ_name] = 0
-        }
+    for (let i = 0; i < checked_organs.length; i++) {
+        document.getElementById(checked_organs[i]).checked = true;
     }
-
-    posible_organs = Object.keys(posible_organs)
-    posible_organs = posible_organs.sort(function(a, b) {
-        return a.localeCompare(b)
-    });
-
-    const item_in_row = 5
-    const table = create_table("table4")
-    var header = table.createTBody();
-
-    for (let j = 0; j < posible_organs.length/item_in_row; j++) {
-        divvv = ''
-        const row = header.insertRow();
-        for (let k = 0; k < item_in_row; k++) {
-            let idx = (j*item_in_row)+k;
-            if(idx < posible_organs.length){
-                let name = posible_organs[idx];
-                labelll = `<label for="${name}">${name}</label>`
-                inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
-                divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
-                row.insertCell().outerHTML = `<th>${divvv}</th>`;
-            }
-        }
-    }
-    document.getElementById("checkbox_categories").appendChild(table);
-};
+}
