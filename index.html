@@ -4,11 +4,37 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width" />
-        <title>My test page</title>
+        <title>GUNB js</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     </head>
     <body>
-        test
-        <input type="file" id="file-input">
+        <div>
+            Wybierz plik z danymi:
+            <input style="display: inline-block;" type="file" id="file-input">
+        </div>
+        <div id="parameters">
+
+        </div>
+
+        <div id="file_parameters"></div>
+        <div id="checkbox_parameters"></div>
+        <div id="list_parameters"></div>
+        <div id="total_value"></div>
+
+
+
+        <div>
+            <button onclick="display_table()">Pokaż dane</button>
+        </div>
+
+        <div id="result_table"></div>
+
+
     </body>
+    <script src="utils.js"></script>
     <script src="index.js"></script>
 </html>
