@@ -11,34 +11,46 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     </head>
+    <style>
+        body {
+            padding: 30px;
+        }
+        .main_classs{
+            margin: 0 0 30px 0;
+        }
+    </style>
     <body>
-        <div>
+        <div class="main_classs">
             Wybierz plik z danymi:
             <input style="display: inline-block;" type="file" id="file-input">
         </div>
         <h3>Kolumny do wyświetlenia:</h3>
-        <div id="checkbox_parameters"></div>
+        <div id="checkbox_parameters"  class="main_classs"></div>
         <h3>Organy administracyjne:</h3>
-        <div id="checkbox_organs"></div>
+        <div id="checkbox_organs" class="main_classs"></div>
         <h3>Kategorie obiektów:</h3>
-        <div id="checkbox_categories"></div>
+        <div id="checkbox_categories" class="main_classs"></div>
         <h3>Filtry:</h3>
-        <div id="list_parameters"></div>
+        <div id="list_parameters" class="main_classs"></div>
         <h3>Podsumowanie:</h3>
-        <div id="total_value"></div>
-        <div>
+        <div id="total_value" class="main_classs"></div>
+        <div class="main_classs">
             <h3>Pokaż dane:</h3>
+            <p>
+                Maksymalna ilość wyświetlonych wyników:
+                <input id="max_elem" onchange="max_elem_changed()" value="100"> 
+            </p>
             <button class="btn btn-warning" style="width: 300px;"  onclick="display_table()">Pokaż dane</button>
         </div>
 
         <h3>Dane:</h3>
-        <div id="result_table"></div>
+        <div id="result_table" class="main_classs"></div>
 
 
     </body>
-    <script src="default.js"></script>
-    <script src="sort_func.js"></script>
-    <script src="utils.js"></script>
-    <script src="display.js"></script>
-    <script src="index.js"></script>
+    <script src="js/default.js"></script>
+    <script src="js/sort_func.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/display.js"></script>
+    <script src="js/index.js"></script>
 </html>

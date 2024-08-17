@@ -19,8 +19,10 @@ document.getElementById('file-input').addEventListener('change', (event) => {
             }
 
             if(check_if_obj_has_correct_data(objjj)){
+                // objjj["data_wplywu_wniosku"] = ;
                 listtttt.push(objjj);
             }
+            
         }
 
 
@@ -36,8 +38,8 @@ document.getElementById('file-input').addEventListener('change', (event) => {
         display_organs_checkboxes();
         display_category_checkboxes();
         display_search_parameters_list();
-        display_table();
         check_default_checkboxes();
+        display_table();
         
         var endTime = performance.now()
         console.log(`Time to display: ${endTime - startTime} milliseconds`)
@@ -56,4 +58,8 @@ function check_default_checkboxes(){
     for (let i = 0; i < checked_organs.length; i++) {
         document.getElementById(checked_organs[i]).checked = true;
     }
+}
+
+function max_elem_changed(){
+    max_elem = document.getElementById("max_elem").value ;
 }
