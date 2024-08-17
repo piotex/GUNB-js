@@ -8,5 +8,5 @@ var posible_categories = ["I","II","III","IV","V","VI","VII","VIII","IX","X",
 "XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX",
 "XXI","XXII","XXIII","XXIV","XXV","XXVI","XXVII","XXVIII","XXIX","XXX"]
 
-var max_elem = 1000;
+var max_elem = 100;
 

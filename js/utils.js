@@ -100,7 +100,7 @@ function insert_search_parameters(){
 
 function sort_data(){
     listtttt.sort(function(a, b) { 
-        return b["data_wplywu_wniosku"].substring(0,4) - a["data_wplywu_wniosku"].substring(0,4);
+        return new Date(b["data_wplywu_wniosku"].substring(0,10)) - new Date(a["data_wplywu_wniosku"].substring(0,10));
     })
 }
 
