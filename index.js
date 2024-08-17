@@ -1,100 +1,127 @@
 var listtttt = []
-var search_parameters = [{"data_wplywu_wniosku":"2016-05"},{"kategoria":"I"}]
+var search_parameters = [{"data_wplywu_wniosku":"24-08"},{"nazwa_zam_budowlanego":"budynków"}]
+var checked_names = ["nazwa_inwestor","data_wplywu_wniosku","nazwa_zam_budowlanego","kategoria", "nazwa_organu"]
+var checked_organs = []
 
+var max_elem = 1000;
+var posible_organs = {}
 
 
 
 document.getElementById('file-input').addEventListener('change', (event) => {
+    var startTime = performance.now()
+
     const reader = new FileReader();
     reader.readAsText(event.target.files[0]);
     reader.onload = (event) => {
         csvData = event.target.result;
         rows = csvData.split('\n');
         
-        for (let i = 0; i < rows.length; i++) {
+        headerssss = rows[0].split('#');
+        
+        for (let i = 1; i < rows.length; i++) {
             const cells = rows[i].split('#');
             objjj = {}
             for (let j = 0; j < cells.length; j++) {
-                objjj[j] = cells[j];
+                objjj[headerssss[j]] = cells[j];
             }
-            listtttt.push(objjj)
+
+            if(check_if_obj_has_correct_data(objjj)){
+                listtttt.push(objjj);
+            }
         }
 
-        display_parameter_checkbox()
-        checked_by_default()
-        display_search_parameters_list()
+
+
+        sort_data()
+        
+        if (listtttt.length < max_elem){
+            max_elem=listtttt.length;
+        }
+
+        display_total();
+        display_parameter_checkbox();
+        check_default_checkboxes();
+        display_organs_checkboxes();
+        display_category_checkboxes();
+        display_search_parameters_list();
+        display_table();
+        
+        var endTime = performance.now()
+        console.log(`Time to display: ${endTime - startTime} milliseconds`)
     };
 
 });
 
-
-function display_table() {
-    var startTime = performance.now()
-    var max_elem = 100;
-    if (listtttt.length < max_elem){
-        max_elem=listtttt.length;
+function display_organs_checkboxes(){
+    posible_organs = {}
+    for (let i = 0; i < listtttt.length; i++) {
+        organ_name = listtttt[i]["nazwa_organu"];
+        organ_name = organ_name.replace('"','').trim();
+        if(!(organ_name in posible_organs)){
+            posible_organs[organ_name] = 0
+        }
     }
 
-    if (document.contains(document.getElementById("table"))) {
-        document.getElementById("table").remove();
-    }   
-    const table = document.createElement('table');
-    table.setAttribute("id", "table");
-    table.classList.add("table");
-    table.classList.add("table-striped");
+    posible_organs = Object.keys(posible_organs)
+    posible_organs = posible_organs.sort(function(a, b) {
+        return a.localeCompare(b)
+    });
 
-    var header = table.createTHead();
-    insert_header(header, listtttt[0])
-    var body = table.createTBody();
-    insert_body(body, max_elem)
+    const item_in_row = 5
+    const table = create_table("table4")
+    var header = table.createTBody();
 
-    document.getElementById("result_table").appendChild(table);
-    var endTime = performance.now()
-    console.log(`Time to display: ${endTime - startTime} milliseconds`)
+    for (let j = 0; j < posible_organs.length/item_in_row; j++) {
+        divvv = ''
+        const row = header.insertRow();
+        for (let k = 0; k < item_in_row; k++) {
+            let idx = (j*item_in_row)+k;
+            if(idx < posible_organs.length){
+                let name = posible_organs[idx];
+                labelll = `<label for="${name}">${name}</label>`
+                inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
+                divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
+                row.insertCell().outerHTML = `<th>${divvv}</th>`;
+            }
+        }
+    }
+    document.getElementById("checkbox_organs").appendChild(table);
 };
 
-function delete_search_parameters(idx){
-    search_parameters.splice(idx, 1);
-    display_search_parameters_list();
-}
-
-function display_search_parameters_list(){
-    if (document.contains(document.getElementById("table3"))) {
-        document.getElementById("table3").remove();
-    }   
-
-    const table = document.createElement('table');
-    table.setAttribute("id", "table3");
-    table.classList.add("table");
-    table.classList.add("table-striped");
-    var body = table.createTBody();
-
-    for (let i = 0; i < search_parameters.length; i++) { 
-        search_parameters_keys = Object.keys(search_parameters[i])
-        search_parameters_values = Object.values(search_parameters[i])
-
-        const row = body.insertRow();
-        row.insertCell().textContent = search_parameters_keys[0];
-        row.insertCell().textContent = search_parameters_values[0];
-        row.insertCell().outerHTML = `<td><button onclick="delete_search_parameters(${i})" class="btn btn-danger">Usuń filtr</button></td>`;
+function display_category_checkboxes(){
+    return 1;
+    posible_organs = {}
+    for (let i = 0; i < listtttt.length; i++) {
+        organ_name = listtttt[i]["kategoria"];
+        organ_name = organ_name.replace('"','').trim();
+        if(!(organ_name in posible_organs)){
+            posible_organs[organ_name] = 0
+        }
     }
-    const row = body.insertRow();
-    select_html = '<select name="insert_search_parameters_key" id="insert_search_parameters_key">'
-    for (let j = 0; j < Object.keys(listtttt[0]).length; j++) {
-        select_html += `<option value="${listtttt[0][j]}">${listtttt[0][j]}</option>`
+
+    posible_organs = Object.keys(posible_organs)
+    posible_organs = posible_organs.sort(function(a, b) {
+        return a.localeCompare(b)
+    });
+
+    const item_in_row = 5
+    const table = create_table("table4")
+    var header = table.createTBody();
+
+    for (let j = 0; j < posible_organs.length/item_in_row; j++) {
+        divvv = ''
+        const row = header.insertRow();
+        for (let k = 0; k < item_in_row; k++) {
+            let idx = (j*item_in_row)+k;
+            if(idx < posible_organs.length){
+                let name = posible_organs[idx];
+                labelll = `<label for="${name}">${name}</label>`
+                inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
+                divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
+                row.insertCell().outerHTML = `<th>${divvv}</th>`;
+            }
+        }
     }
-    select_html += "</select>"
-    row.insertCell().outerHTML = `<td>${select_html}</td>`;
-    row.insertCell().outerHTML = `<td><input id="insert_search_parameters_value" placeholder="Wartość filtru..."></td>`;
-    row.insertCell().outerHTML = `<td><button onclick="insert_search_parameters()" class="btn btn-primary"> Dodaj filtr </button></td>`;
-
-    document.getElementById("list_parameters").appendChild(table);
-}
-
-
-function insert_search_parameters(){
-    keyyy = document.getElementById("insert_search_parameters_key").value;
-    valueeee = document.getElementById("insert_search_parameters_value").value;
-    search_parameters.push({[keyyy] : valueeee});
-    display_search_parameters_list();
-}
+    document.getElementById("checkbox_categories").appendChild(table);
+};

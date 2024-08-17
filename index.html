@@ -16,25 +16,27 @@
             Wybierz plik z danymi:
             <input style="display: inline-block;" type="file" id="file-input">
         </div>
-        <div id="parameters">
-
-        </div>
-
-        <div id="file_parameters"></div>
+        <h3>Kolumny do wyświetlenia:</h3>
         <div id="checkbox_parameters"></div>
+        <h3>Organy administracyjne:</h3>
+        <div id="checkbox_organs"></div>
+        <h3>Kategorie obiektów:</h3>
+        <div id="checkbox_categories"></div>
+        <h3>Filtry:</h3>
         <div id="list_parameters"></div>
+        <h3>Podsumowanie:</h3>
         <div id="total_value"></div>
-
-
-
         <div>
-            <button onclick="display_table()">Pokaż dane</button>
+            <h3>Pokaż dane:</h3>
+            <button class="btn btn-warning" style="width: 300px;"  onclick="display_table()">Pokaż dane</button>
         </div>
 
+        <h3>Dane:</h3>
         <div id="result_table"></div>
 
 
     </body>
     <script src="utils.js"></script>
+    <script src="display.js"></script>
     <script src="index.js"></script>
 </html>
