@@ -33,8 +33,12 @@ function display_parameter_checkbox(){
 };
 
 function display_search_parameters_list(){
-    const table = create_table("table3")
+    keyss = Object.keys(listtttt[0])
+    keyss = keyss.sort(function(a, b) {
+        return a.localeCompare(b)
+    });
 
+    const table = create_table("table3")
     var body = table.createTBody();
 
     for (let i = 0; i < search_parameters.length; i++) { 
@@ -48,8 +52,9 @@ function display_search_parameters_list(){
     }
     const row = body.insertRow();
     select_html = '<select name="insert_search_parameters_key" id="insert_search_parameters_key">'
-    for (let j = 0; j < Object.keys(listtttt[0]).length; j++) {
-        let name = Object.keys(listtttt[0])[j]
+
+    for (let j = 0; j < keyss.length; j++) {
+        let name = keyss[j]
         select_html += `<option value="${name}">${name}</option>`
     }
     select_html += "</select>"
