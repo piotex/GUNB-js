@@ -12,13 +12,17 @@ function insert_header(header, item){
     }
 }
 function insert_body(body){
-    displayed_elem_counter = 0
+    displayed_elem_counter = 0;
+    max_elem = document.getElementById("max_elem").value;
     for (let i = 0; i < listtttt.length; i++) {
         item = listtttt[i]
         if(!check_if_obj_in_search_parameters(item)){
             continue;
         }
         if(!check_if_obj_in_search_organs(item)){
+            continue;
+        }
+        if(!check_if_obj_in_search_nazwa_zamierzenia_bud(item)){
             continue;
         }
         if(!check_if_obj_in_search_categories(item)){
@@ -37,15 +41,23 @@ function insert_body(body){
 
 
 
+function check_if_obj_in_search_nazwa_zamierzenia_bud(item){
+    if(!document.getElementById(item["nazwa_zamierzenia_bud"])){
+        return false;
+    }
+    return document.getElementById(item["nazwa_zamierzenia_bud"]).checked;
+}
 function check_if_obj_in_search_organs(item){
-    // return true;
-    organ = item["nazwa_organu"]
-    return document.getElementById(organ).checked;
+    if(!document.getElementById(item["nazwa_organu"])){
+        return false;
+    }
+    return document.getElementById(item["nazwa_organu"]).checked;
 }
 function check_if_obj_in_search_categories(item){
-    // return true;
-    organ = item["kategoria"]
-    return document.getElementById(organ).checked;
+    if(!document.getElementById(item["kategoria"])){
+        return false;
+    }
+    return document.getElementById(item["kategoria"]).checked;
 }
 
 function check_if_obj_in_search_parameters(item){
@@ -100,14 +112,12 @@ function insert_search_parameters(){
 
 function sort_data(){
     listtttt.sort(function(a, b) { 
+        // return b["data_wplywu_wniosku"] - a["data_wplywu_wniosku"];
         return new Date(b["data_wplywu_wniosku"].substring(0,10)) - new Date(a["data_wplywu_wniosku"].substring(0,10));
     })
 }
 
 function check_if_obj_has_correct_data(objjj){
-    if(objjj["data_wplywu_wniosku"] == undefined  || "2" != objjj["data_wplywu_wniosku"][0]){
-        return false;
-    }
     for (let j = 0; j < headerssss.length; j++) {
         if(objjj[headerssss[j]] == undefined){
             return false
