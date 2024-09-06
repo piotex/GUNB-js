@@ -1,3 +1,44 @@
+function display_body_input_year_checkboxes() {
+    for (let i = 0; i < checkboxes_years.length; i++) {
+        var checkboxes_years_i = checkboxes_years[i];
+        const div = document.createElement('div');
+        div.className = 'body_input_checkboxes_checkbox';
+        div.innerHTML = `
+        <div style="display: inline-block; min-width: 280px;"> 
+        <input type="checkbox" id="body_input_year_checkboxes_${checkboxes_years_i}"  > 
+        <label for="body_input_year_checkboxes_${checkboxes_years_i}">${checkboxes_years_i}</label> 
+        </div>
+        `;
+        document.getElementById('body_input_year_checkboxes').appendChild(div);
+    }
+    document.getElementById(`body_input_year_checkboxes_${new Date().getFullYear()}`).checked = true;
+}
+display_body_input_year_checkboxes();
+
+
+
+function display_body_input_wojewodztwo_checkboxes() {
+    for (let k in posible_organs) {
+        var checkboxes_years_i = k;
+        const div = document.createElement('div');
+        div.className = 'body_input_checkboxes_checkbox';
+        div.innerHTML = `
+        <div style="display: inline-block; min-width: 280px;"> 
+        <input type="checkbox" id="body_input_wojewodztwo_checkboxes_${checkboxes_years_i}"  > 
+        <label for="body_input_wojewodztwo_checkboxes_${checkboxes_years_i}">${checkboxes_years_i}</label> 
+        </div>
+        `;
+        document.getElementById('body_input_organs_checkboxes').appendChild(div);
+    }
+
+    for (let i = 0; i < checked_wojewodztwo.length; i++) {
+        document.getElementById(`body_input_wojewodztwo_checkboxes_${checked_wojewodztwo[i]}`).checked = true;
+    }
+}
+display_body_input_wojewodztwo_checkboxes();
+
+
+
 function display_table() {
     const table = create_table("table")
 
@@ -7,6 +48,8 @@ function display_table() {
     insert_body(body)
 
     document.getElementById("result_table").appendChild(table);
+
+    display_total();
 };
 
 function display_parameter_checkbox(){
@@ -66,36 +109,90 @@ function display_search_parameters_list(){
 };
 
 function display_total(){
-    document.getElementById('total_value').innerHTML += `<div>Wczytano z pliku: ${listtttt.length}</div>`;
+    total = 0;
+    for (let i = 0; i < listtttt.length; i++) {
+        item = listtttt[i]
+        if(!check_if_obj_in_search_parameters(item)){
+            continue;
+        }
+        if(!check_if_obj_in_search_nazwa_zamierzenia_bud(item)){
+            continue;
+        }
+        if(!check_if_obj_in_search_categories(item)){
+            continue;
+        }
+        if(!check_if_obj_in_search_organs(item)){
+            continue;
+        }
+        total += 1;
+    }
+    document.getElementById('total_value').innerHTML = `<div>Liczba elementów spełniających filtry: ${total} <br/>Liczba elementy w pliku: ${listtttt.length}</div>`;
 }
 
 
 function display_organs_checkboxes(){
-    posible_organs = {}
-    for (let i = 0; i < listtttt.length; i++) {
-        organ_name = listtttt[i]["nazwa_organu"];
-        organ_name = organ_name.replace('"','').trim();
-        if(!(organ_name in posible_organs)){
-            posible_organs[organ_name] = 0
+    checked_woj = []
+    for (let k in posible_organs) {
+        if (document.getElementById(`body_input_wojewodztwo_checkboxes_${k}`).checked) {
+            checked_woj.push(k);
         }
     }
-
-    posible_organs = Object.keys(posible_organs)
-    posible_organs = posible_organs.sort(function(a, b) {
-        return a.localeCompare(b)
-    });
 
     const item_in_row = 5
     const table = create_table("table4")
     var header = table.createTBody();
 
-    for (let j = 0; j < posible_organs.length/item_in_row; j++) {
+    for (let i = 0; i < checked_woj.length; i++) {
+        organs = posible_organs[checked_woj[i]]
+        for (let j = 0; j < organs.length/item_in_row; j++) {
+            divvv = ''
+            const row = header.insertRow();
+            for (let k = 0; k < item_in_row; k++) {
+                let idx = (j*item_in_row)+k;
+                if(idx < organs.length){
+                    let name = organs[idx];
+                    labelll = `<label for="${name}">${name}</label>`
+                    inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
+                    divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
+                    row.insertCell().outerHTML = `<th>${divvv}</th>`;
+                }
+            }
+        }
+    }
+
+    document.getElementById("checkbox_organs").appendChild(table);
+};
+
+
+function display_nazwa_zamierzenia_bud_checkboxes(){
+    nazwa_zamierzenia_bud_dict = {}
+    for (let i = 0; i < listtttt.length; i++) {
+        elem = listtttt[i]["nazwa_zamierzenia_bud"];
+        elem = elem.replace('"','').trim();
+        if (elem == ""){
+            continue;
+        }
+        if(!(elem in nazwa_zamierzenia_bud_dict)){
+            nazwa_zamierzenia_bud_dict[elem] = 0
+        }
+        nazwa_zamierzenia_bud_dict[elem] += 1;
+    }
+    nazwa_zamierzenia_bud_dict = Object.keys(nazwa_zamierzenia_bud_dict)
+    // posible_organs = posible_organs.sort(function(a, b) {
+    //     return a.localeCompare(b)
+    // });
+
+    const item_in_row = 5
+    const table = create_table("table6")
+    var header = table.createTBody();
+
+    for (let j = 0; j < nazwa_zamierzenia_bud_dict.length/item_in_row; j++) {
         divvv = ''
         const row = header.insertRow();
         for (let k = 0; k < item_in_row; k++) {
             let idx = (j*item_in_row)+k;
-            if(idx < posible_organs.length){
-                let name = posible_organs[idx];
+            if(idx < nazwa_zamierzenia_bud_dict.length){
+                let name = nazwa_zamierzenia_bud_dict[idx];
                 labelll = `<label for="${name}">${name}</label>`
                 inputtt = `<input type="checkbox" id="${name}" name="${name}" value="${name}" />`
                 divvv = `<div style="display: inline-block; min-width: 280px;"> ${inputtt} ${labelll} </div> `
@@ -103,7 +200,7 @@ function display_organs_checkboxes(){
             }
         }
     }
-    document.getElementById("checkbox_organs").appendChild(table);
+    document.getElementById("checkbox_nazwa_zamierzenia_bud").appendChild(table);
 };
 
 function display_category_checkboxes(){
