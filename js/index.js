@@ -45,6 +45,9 @@ function is_item_valid_for_first_search(item){
     if(!is_year_valid(item)){
         return false;
     }
+    if(!is_state_valid(item)){
+        return false;
+    }
     return true;
 }
 
