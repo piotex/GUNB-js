@@ -1,7 +1,35 @@
 
 
 
+function is_year_valid(item){
+    key = "data_wplywu_wniosku";
+    key2 = "data_wplywu_wniosku_do_urzedu"
+    if(headers_from_file.includes(key2)){
+        key = key2;
+    }
+    if(item[key] == ""){
+        return false;
+    }
 
+    item_year = item[key].split('-')[0];
+    if(item_year[0] != "2"){
+        return false;
+    }
+
+    parent_id = "body_input_year_checkboxes"
+    id = `${parent_id}_${item_year}`;
+    if(!document.getElementById(id).checked){
+        return false;
+    }
+    return true;
+}
+
+function is_item_valid_for_first_search(item){
+    if(!is_year_valid(item)){
+        return false;
+    }
+    return true;
+}
 
 
 
@@ -18,53 +46,27 @@ document.getElementById('file-input').addEventListener('change', (event) => {
         csvData = event.target.result;
         rows = csvData.split('\n');
         
-        headerssss = rows[0].split('#');
+        headers_from_file = rows[0].split('#');
 
-        
         for (let i = 1; i < rows.length; i++) {
             const cells = rows[i].split('#');
             objjj = {}
-            for (let j = 0; j < headerssss.length; j++) {
-                objjj[headerssss[j]] = "";
+            for (let j = 0; j < headers_from_file.length; j++) {
+                objjj[headers_from_file[j]] = "";
             }
             for (let j = 0; j < cells.length; j++) {
-                objjj[headerssss[j]] = cells[j];
+                objjj[headers_from_file[j]] = cells[j];
             }
-
-            // if(!cells[3]){
-            //     continue;
-            // }
-            // if(cells[3][0] != "2"){
-            //     continue;
-            // }
-            // if (!checked_checkboxes_years.includes(cells[3].substring(0, 4))) {
-            //     continue;
-            // }
-            // if(objjj["numer_decyzji_urzedu"] == ""){
-            //     continue;
-            // }
-            // if(objjj["nazwa_zamierzenia_bud"] == ""){
-            //     continue;
-            // }
-            // if(objjj["nazwa_organu"] == ""){
-            //     continue;
-            // }
-            // if(objjj["kategoria"] == ""){
-            //     continue;
-            // }
-            // if(!check_if_obj_has_correct_data(objjj)){
-            //     continue;
-            // }
-
-            listtttt.push(objjj);
+            if(!is_item_valid_for_first_search(objjj)){
+                continue;
+            }
+            data_from_file.push(objjj);
         }
         // var unique_numer_decyzji_urzedu = {}
         // unique_numer_decyzji_urzedu[objjj["numer_decyzji_urzedu"]] = 0;
         // if(objjj["numer_decyzji_urzedu"] in unique_numer_decyzji_urzedu){
         //     continue;
         // }
-
-
 
         var endTime = performance.now()
         console.log(`Read: ${endTime - startTime} milliseconds`)
@@ -78,6 +80,11 @@ document.getElementById('file-input').addEventListener('change', (event) => {
         document.getElementById("body_input").style.display="none";
 
         display_parameters_checkboxes();
+
+// ===========================================================
+        check_all();
+// ===========================================================
+        
         // display_parameter_checkbox();
         // display_organs_checkboxes();
         // display_category_checkboxes();
