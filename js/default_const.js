@@ -1,7 +1,7 @@
 function gen_years() {
     const aktualnyRok = new Date().getFullYear();
     const lata = [];
-    for (let rok = aktualnyRok; rok >= 2016; rok--) {
+    for (let rok = aktualnyRok; rok >= 2010; rok--) {
         lata.push(rok.toString());
     }
     return lata;

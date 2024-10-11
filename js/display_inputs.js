@@ -35,8 +35,7 @@ function display_parameters_generic_checkboxes(table_name, data_list, parent_id)
     document.getElementById(parent_id).appendChild(table);
 };
 function display_search_parameters_list(){
-    keyss = Object.keys(listtttt[0])
-    keyss = keyss.sort(function(a, b) {
+    keyss = headers_from_file.sort(function(a, b) {
         return a.localeCompare(b)
     });
     const table = create_table("table3")
@@ -64,14 +63,23 @@ function display_search_parameters_list(){
     document.getElementById("list_parameters").appendChild(table);
 };
 
+
+
+
 function display_parameters_checkboxes(){
-    display_parameters_generic_checkboxes("table2", Object.keys(listtttt[0]), "checkbox_parameters");
+    key = "rodzaj_zam_budowlanego"
+    key2 = "nazwa_zamierzenia_bud"
+    if(headers_from_file.includes(key2)){
+        key = key2;
+    }
+
+    display_parameters_generic_checkboxes("table2", headers_from_file, "checkbox_parameters");
 
     display_parameters_generic_checkboxes("table5", posible_categories, "checkbox_categories");
 
     nazwa_zamierzenia_bud_dict = {}
-    for (let i = 0; i < listtttt.length; i++) {
-        elem = listtttt[i]["nazwa_zamierzenia_bud"];
+    for (let i = 0; i < data_from_file.length; i++) {
+        elem = data_from_file[i][key];
         elem = elem.replace('"','').trim();
         if (elem == ""){
             continue;
