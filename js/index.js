@@ -23,6 +23,23 @@ function is_year_valid(item){
     }
     return true;
 }
+function is_state_valid(item){
+    key = "wojewodztwo";
+    key2 = "wojewodztwo_objekt"
+    if(headers_from_file.includes(key2)){
+        key = key2;
+    }
+    item_state = item[key]
+    if(item_state == ""){
+        return false;
+    }
+    parent_id = "body_input_organs_checkboxes"
+    id = `${parent_id}_${item_state}`;
+    if(!document.getElementById(id).checked){
+        return false;
+    }
+    return true;
+}
 
 function is_item_valid_for_first_search(item){
     if(!is_year_valid(item)){
@@ -36,6 +53,11 @@ function is_item_valid_for_first_search(item){
 
 document.getElementById('file-input').addEventListener('change', (event) => {
     display_spining_wheel();
+
+    $('#body_input_year_checkboxes').find('input, textarea, button, select').attr('disabled','disabled');
+    $('#body_input_organs_checkboxes').find('input, textarea, button, select').attr('disabled','disabled');
+    $('#check_all_years').attr('disabled','disabled');
+    $('#check_all_states').attr('disabled','disabled');
 
     checked_checkboxes_years = get_checked_checkboxes_year_checkboxes();
 
@@ -62,11 +84,7 @@ document.getElementById('file-input').addEventListener('change', (event) => {
             }
             data_from_file.push(objjj);
         }
-        // var unique_numer_decyzji_urzedu = {}
-        // unique_numer_decyzji_urzedu[objjj["numer_decyzji_urzedu"]] = 0;
-        // if(objjj["numer_decyzji_urzedu"] in unique_numer_decyzji_urzedu){
-        //     continue;
-        // }
+
 
         var endTime = performance.now()
         console.log(`Read: ${endTime - startTime} milliseconds`)
@@ -77,14 +95,10 @@ document.getElementById('file-input').addEventListener('change', (event) => {
         console.log(`Read + Sort: ${endTime - startTime} milliseconds`)
         
         document.getElementById("body_container").style.display="block";
-        document.getElementById("body_input").style.display="none";
+        // document.getElementById("body_input").style.display="none";
 
         display_parameters_checkboxes();
 
-// ===========================================================
-        check_all();
-// ===========================================================
-        
         // display_parameter_checkbox();
         // display_organs_checkboxes();
         // display_category_checkboxes();
@@ -93,10 +107,11 @@ document.getElementById('file-input').addEventListener('change', (event) => {
         // check_default_checkboxes();
         display_table();
         
-        var endTime = performance.now()
-        console.log(`Read + Sort + Display: ${endTime - startTime} milliseconds`)
-    };
+        var endTime = performance.now();
+        console.log(`Read + Sort + Display: ${endTime - startTime} milliseconds`);
 
+        disable_spining_wheel();
+    };
 });
 
 function check_default_checkboxes(){

@@ -1,7 +1,10 @@
 function sort_data(){
-    console.log("");
-    // data_from_file.sort(function(a, b) { 
-    //     // return b["data_wplywu_wniosku"] - a["data_wplywu_wniosku"];
-    //     return new Date(b["data_wplywu_wniosku"].substring(0,10)) - new Date(a["data_wplywu_wniosku"].substring(0,10));
-    // })
+    key = "data_wplywu_wniosku";
+    key2 = "data_wplywu_wniosku_do_urzedu"
+    if(headers_from_file.includes(key2)){
+        key = key2;
+    }
+    data_from_file.sort(function(a, b) { 
+        return new Date(b[key].substring(0,10)) - new Date(a[key].substring(0,10));
+    })
 }

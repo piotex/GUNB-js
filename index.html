@@ -67,12 +67,18 @@
     </style>
     <body>
         <div class="main_classs" id="body_input" style="display: block;">
-            <h3 style="font-weight: 700;">Wybierz rok/lata do pobrania z dokumentu:</h3>
+            <h3 style="font-weight: 700;">
+                Wybierz rok/lata do pobrania z dokumentu:
+                <button id="check_all_years" class="btn btn-primary"  onclick="check_all_years()">Zaznacz wszystko</button>
+            </h3>
             <div style="height: 10px;"></div>
             <div id="body_input_year_checkboxes"> </div>
             <div style="height: 50px;"></div>
             
-            <h3 style="font-weight: 700;">Wybierz województwo:</h3>
+            <h3 style="font-weight: 700;">
+                Wybierz województwo:
+                <button id="check_all_states" class="btn btn-primary"  onclick="check_all_states()">Zaznacz wszystko</button>
+            </h3>
             <div style="height: 10px;"></div>
             <div id="body_input_organs_checkboxes"> </div>
             <div style="height: 50px;"></div>
@@ -82,22 +88,42 @@
                 <div style="height: 49px;"></div>
                 Wybierz plik z danymi
             </label>
-            <div id="body_input_loader" class="loader" style="display: none;"></div>
         </div>
+        <div id="body_input_loader" class="loader" style="display: none;"></div>
 
         <div class="main_classs" id="body_container" style="display: none;">
-            <h3>Kolumny do wyświetlenia:</h3>
+            <button class="btn btn-danger"  onclick="window.location.reload(true);">Powrót</button>
+            
+            <h3>
+                Kolumny do wyświetlenia:
+                <button class="btn btn-primary"  onclick="check_all_kolumn_do_wys()">Zaznacz wszystko</button>
+            </h3>            
             <div id="checkbox_parameters"  class="main_classs"></div>
-            <h3>Organy administracyjne:</h3>
+
+            <h3>
+                Organy administracyjne:
+                <button class="btn btn-primary"  onclick="check_all_organy_admi()">Zaznacz wszystko</button>
+            </h3>
             <div id="checkbox_organs" class="main_classs"></div>
-            <h3>Kategorie obiektów:</h3>
+            
+            <h3>
+                Kategorie obiektów:
+                <button class="btn btn-primary"  onclick="check_all_kategorie()">Zaznacz wszystko</button>
+            </h3>
             <div id="checkbox_categories" class="main_classs"></div>
-            <h3>Nazwa zamierzenia budowlanego:</h3>
+            
+            <h3>
+                Nazwa zamierzenia budowlanego:
+                <button class="btn btn-primary"  onclick="check_all_nazwy_zam_bud()">Zaznacz wszystko</button>
+            </h3>
             <div id="checkbox_nazwa_zamierzenia_bud" class="main_classs"></div>
+            
             <h3>Filtry:</h3>
             <div id="list_parameters" class="main_classs"></div>
+            
             <h3>Podsumowanie:</h3>
             <div id="total_value" class="main_classs"></div>
+            
             <div class="main_classs">
                 <h3>Pokaż dane:</h3>
                 <p>
@@ -105,7 +131,9 @@
                     <input id="max_elem" onchange="display_table()" value="100"> 
                 </p>
                 <button class="btn btn-warning" style="width: 300px;"  onclick="display_table()">Pokaż dane</button>
+                <button class="btn btn-warning" style="width: 300px;"  onclick="display_unique_table()">Pokaż unikalne dane</button>
             </div>
+            
             <h3>Dane:</h3>
             <div id="result_table" class="main_classs"></div>
         </div>

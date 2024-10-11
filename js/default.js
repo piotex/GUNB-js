@@ -3,8 +3,10 @@ var data_from_file = [];
 var data_valid = [];
 
 var checked_states = ["mazowieckie"];
-// var checked_years = [`${new Date().getFullYear()}`];
-var checked_years = checkboxes_years;
+// var checked_states = ["dolnośląskie", "kujawsko-pomorskie", "łódzkie", "lubelskie", "lubuskie", "małopolskie", "mazowieckie", "opolskie", "podkarpackie", "podlaskie", "pomorskie", "śląskie", "świętokrzyskie", "warmińsko-mazurskie", "wielkopolskie", "zachodniopomorskie"]
+
+var checked_years = [`${new Date().getFullYear()}`];
+// var checked_years = checkboxes_years;
 
 
 var search_parameters = [{"nazwa_zam_budowlanego":"budynków"}];
