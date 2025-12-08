@@ -105,8 +105,9 @@ function display_parameters_checkboxes(){
 
 
     display_search_parameters_list();
-};
 
+    check_default_kolumn_do_wys();
+};
 
 
 

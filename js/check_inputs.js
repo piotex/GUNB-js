@@ -73,3 +73,8 @@ function check_all_nazwy_zam_bud(){
     }
     check_default_generic(Object.keys(nazwa_zamierzenia_bud_dict), "");
 }
+
+function check_default_kolumn_do_wys(){
+    default_kolumn_do_wys = ["nazwa_organu", "numer_decyzji_urzedu", "data_wydania_decyzji", "nazwa_inwestor", "wojewodztwo", "miasto", "nazwa_zam_budowlanego", "kubatura"]
+    check_default_generic(default_kolumn_do_wys, "");
+}
