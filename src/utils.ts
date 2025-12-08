@@ -4,12 +4,37 @@ export const parseCSV = (
   csvData: string
 ): { headers: string[]; data: DataRow[] } => {
   const rows = csvData.split("\n");
-  const headers = rows[0].split("#").map((h) => h.trim());
+  const rawHeaders = rows[0].split("#");
+
+  // Handle duplicate headers by adding suffix
+  // First pass: count occurrences
+  const headerCount: { [key: string]: number } = {};
+  for (let i = 0; i < rawHeaders.length; i++) {
+    const header = rawHeaders[i];
+    headerCount[header] = (headerCount[header] || 0) + 1;
+  }
+
+  // Second pass: add suffixes to duplicates
+  const headers: string[] = [];
+  const currentCount: { [key: string]: number } = {};
+
+  for (let i = 0; i < rawHeaders.length; i++) {
+    const header = rawHeaders[i];
+    currentCount[header] = (currentCount[header] || 0) + 1;
+
+    if (headerCount[header] > 1) {
+      // Add suffix if there are duplicates
+      headers.push(`${header}_${currentCount[header]}`);
+    } else {
+      // No suffix if unique
+      headers.push(header);
+    }
+  }
+
   const data: DataRow[] = [];
 
   for (let i = 1; i < rows.length; i++) {
-    if (!rows[i].trim()) continue;
-
+    // Process all rows, including empty ones (like the original)
     const cells = rows[i].split("#");
     const obj: DataRow = {};
 

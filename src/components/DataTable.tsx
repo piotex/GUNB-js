@@ -56,37 +56,69 @@ const DataTable: React.FC<DataTableProps> = ({
   const visibleColumns = headers.filter((h) => selectedColumns.includes(h));
 
   return (
-    <div className="table-container">
-      <table className="table table-striped">
-        <thead>
-          <tr>
-            {visibleColumns.map((header) => (
-              <th
-                key={header}
-                onClick={() => handleSort(header)}
-                style={{ cursor: "pointer", userSelect: "none" }}
-              >
-                {header}
-                {sortColumn === header && (
-                  <span style={{ marginLeft: "5px" }}>
-                    {sortDirection === "asc" ? "▲" : "▼"}
-                  </span>
-                )}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {displayData.map((row, index) => (
-            <tr key={index}>
-              {visibleColumns.map((header) => (
-                <td key={header}>{row[header]}</td>
+    <>
+      {data.length > maxElements && (
+        <div
+          style={{
+            padding: "10px 15px",
+            backgroundColor: "#fff3cd",
+            border: "1px solid #ffc107",
+            borderRadius: "4px",
+            marginBottom: "10px",
+            fontSize: "14px",
+          }}
+        >
+          ⚠️ Wyświetlanie {displayData.length} z {data.length} wierszy
+        </div>
+      )}
+      <div className="table-container">
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              {visibleColumns.map((header, colIndex) => (
+                <th
+                  key={`th_${colIndex}_${header}`}
+                  onClick={() => handleSort(header)}
+                  style={{ cursor: "pointer", userSelect: "none" }}
+                  title="Kliknij aby posortować"
+                >
+                  {header}
+                  {sortColumn === header && (
+                    <span style={{ marginLeft: "8px", fontSize: "12px" }}>
+                      {sortDirection === "asc" ? "▲" : "▼"}
+                    </span>
+                  )}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {displayData.length > 0 ? (
+              displayData.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {visibleColumns.map((header, colIndex) => (
+                    <td key={`td_${rowIndex}_${colIndex}`}>{row[header]}</td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={visibleColumns.length}
+                  style={{
+                    textAlign: "center",
+                    padding: "20px",
+                    color: "#666",
+                  }}
+                >
+                  Brak danych do wyświetlenia
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };
 

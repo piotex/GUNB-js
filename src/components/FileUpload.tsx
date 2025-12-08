@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { CHECKBOXES_YEARS, POSIBLE_ORGANS } from "../constants";
 
 interface FileUploadProps {
@@ -22,19 +22,98 @@ const FileUpload: React.FC<FileUploadProps> = ({
   onCheckAllStates,
   onFileUpload,
 }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
+  React.useEffect(() => {
+    const handleWindowDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleWindowDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    window.addEventListener("dragover", handleWindowDragOver);
+    window.addEventListener("drop", handleWindowDrop);
+
+    return () => {
+      window.removeEventListener("dragover", handleWindowDragOver);
+      window.removeEventListener("drop", handleWindowDrop);
+    };
+  }, []);
+
+  const processFile = (file: File) => {
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith(".csv") && file.type !== "text/csv") {
+      alert("Proszę wybrać plik CSV (.csv)");
+      return;
+    }
+
+    // Update the hidden input with the file
+    const input = document.getElementById("file-input") as HTMLInputElement;
+    if (input) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      input.files = dataTransfer.files;
+
+      // Create a synthetic React event and call the handler directly
+      const syntheticEvent = {
+        target: input,
+        currentTarget: input,
+      } as React.ChangeEvent<HTMLInputElement>;
+
+      onFileUpload(syntheticEvent);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set isDragging to false if we're leaving the drop zone itself, not child elements
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      processFile(files[0]);
+    }
+  };
   return (
     <div className="file-upload-container">
-      <h3 style={{ fontWeight: 700 }}>
+      <h1 style={{ textAlign: "center", color: "#333", marginBottom: "30px" }}>
+        System Analizy Danych GUNB
+      </h1>
+
+      <h3 style={{ fontWeight: 700, marginBottom: "15px" }}>
         Wybierz rok/lata do pobrania z dokumentu:
         <button
           onClick={onCheckAllYears}
-          className="btn btn-primary"
+          className="btn btn-primary btn-sm"
           style={{ marginLeft: "10px" }}
         >
           Zaznacz wszystkie
         </button>
       </h3>
-      <div style={{ height: "10px" }}></div>
       <div className="checkboxes-container">
         {CHECKBOXES_YEARS.map((year) => (
           <div key={year} className="checkbox-item">
@@ -49,19 +128,18 @@ const FileUpload: React.FC<FileUploadProps> = ({
           </div>
         ))}
       </div>
-      <div style={{ height: "50px" }}></div>
+      <div style={{ height: "40px" }}></div>
 
-      <h3 style={{ fontWeight: 700 }}>
+      <h3 style={{ fontWeight: 700, marginBottom: "15px" }}>
         Wybierz województwo/województwa do pobrania z dokumentu:
         <button
           onClick={onCheckAllStates}
-          className="btn btn-primary"
+          className="btn btn-primary btn-sm"
           style={{ marginLeft: "10px" }}
         >
           Zaznacz wszystkie
         </button>
       </h3>
-      <div style={{ height: "10px" }}></div>
       <div className="checkboxes-container">
         {Object.keys(POSIBLE_ORGANS).map((state) => (
           <div key={state} className="checkbox-item">
@@ -76,12 +154,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
           </div>
         ))}
       </div>
-      <div style={{ height: "50px" }}></div>
+      <div style={{ height: "40px" }}></div>
 
       {loading ? (
         <div className="loader"></div>
       ) : (
-        <>
+        <div style={{ display: "flex", justifyContent: "center" }}>
           <input
             style={{ display: "none" }}
             type="file"
@@ -89,12 +167,19 @@ const FileUpload: React.FC<FileUploadProps> = ({
             accept=".csv"
             onChange={onFileUpload}
           />
-          <label htmlFor="file-input" className="custom-file-upload">
-            Przeciągnij tutaj plik CSV
+          <div
+            className={`custom-file-upload ${isDragging ? "dragging" : ""}`}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onClick={() => document.getElementById("file-input")?.click()}
+          >
+            📁 Przeciągnij tutaj plik CSV
             <br />
-            lub kliknij aby wybrać
-          </label>
-        </>
+            <span style={{ fontSize: "18px" }}>lub kliknij aby wybrać</span>
+          </div>
+        </div>
       )}
     </div>
   );

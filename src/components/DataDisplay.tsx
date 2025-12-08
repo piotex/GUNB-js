@@ -140,22 +140,27 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
 
       <h3>Podsumowanie:</h3>
       <div className="summary">
-        Liczba elementów spełniających wszystkie filtry: {filteredData.length}
+        <strong>Liczba elementów spełniających wszystkie filtry:</strong>{" "}
+        {filteredData.length}
         <br />
-        Liczba elementów spełniających filtry zdefiniowane podczas wczytywania
-        pliku: {data.length}
+        <strong>
+          Liczba elementów spełniających filtry zdefiniowane podczas wczytywania
+          pliku:
+        </strong>{" "}
+        {data.length}
       </div>
 
-      <div style={{ margin: "20px 0" }}>
+      <div className="max-elements-control">
         <label htmlFor="max-elements">
-          Maksymalna liczba wyświetlanych wierszy:{" "}
+          Maksymalna liczba wyświetlanych wierszy:
         </label>
         <input
           id="max-elements"
           type="number"
           value={maxElements}
           onChange={(e) => setMaxElements(parseInt(e.target.value) || 100)}
-          style={{ marginLeft: "10px", width: "100px" }}
+          className="form-control"
+          min="1"
         />
       </div>
 

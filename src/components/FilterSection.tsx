@@ -107,15 +107,15 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         </button>
       </h3>
       <div className="checkbox-grid">
-        {headers.map((header) => (
-          <div key={header} className="checkbox-item-inline">
+        {headers.map((header, index) => (
+          <div key={`col_${index}`} className="checkbox-item-inline">
             <input
               type="checkbox"
-              id={`col_${header}`}
+              id={`col_${index}`}
               checked={selectedColumns.includes(header)}
               onChange={() => onColumnToggle(header)}
             />
-            <label htmlFor={`col_${header}`}>{header}</label>
+            <label htmlFor={`col_${index}`}>{header}</label>
           </div>
         ))}
       </div>
@@ -228,8 +228,8 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                   onChange={(e) => setNewParamKey(e.target.value)}
                   className="form-control"
                 >
-                  {headers.map((header) => (
-                    <option key={header} value={header}>
+                  {headers.map((header, index) => (
+                    <option key={`opt_${index}`} value={header}>
                       {header}
                     </option>
                   ))}
