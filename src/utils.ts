@@ -1,10 +1,50 @@
 import { DataRow } from "./types";
 
+const detectSeparator = (firstLine: string): string => {
+  const candidates = ["#", ";", ",", "\t"];
+  let best = "#";
+  let bestCount = 0;
+  for (const sep of candidates) {
+    const count = firstLine.split(sep).length - 1;
+    if (count > bestCount) {
+      bestCount = count;
+      best = sep;
+    }
+  }
+  return best;
+};
+
+const parseCSVLine = (line: string, separator: string): string[] => {
+  const cells: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === separator && !inQuotes) {
+      cells.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  cells.push(current);
+  return cells;
+};
+
 export const parseCSV = (
-  csvData: string
+  csvData: string,
 ): { headers: string[]; data: DataRow[] } => {
   const rows = csvData.split("\n");
-  const rawHeaders = rows[0].split("#");
+  const separator = detectSeparator(rows[0]);
+  const rawHeaders = parseCSVLine(rows[0], separator);
 
   // Handle duplicate headers by adding suffix
   // First pass: count occurrences
@@ -35,7 +75,7 @@ export const parseCSV = (
 
   for (let i = 1; i < rows.length; i++) {
     // Process all rows, including empty ones (like the original)
-    const cells = rows[i].split("#");
+    const cells = parseCSVLine(rows[i], separator);
     const obj: DataRow = {};
 
     for (let j = 0; j < headers.length; j++) {
@@ -50,7 +90,7 @@ export const parseCSV = (
 
 export const sortDataByDate = (
   data: DataRow[],
-  headers: string[]
+  headers: string[],
 ): DataRow[] => {
   const key = headers.includes("data_wplywu_wniosku_do_urzedu")
     ? "data_wplywu_wniosku_do_urzedu"

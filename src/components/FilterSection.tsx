@@ -56,9 +56,14 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   const todayStr = `${yyyy}-${mm}-${dd}`;
 
   const [dateFrom, setDateFrom] = React.useState<string | null>(
-    threeMonthsAgoStr
+    threeMonthsAgoStr,
   );
   const [dateTo, setDateTo] = React.useState<string | null>(todayStr);
+
+  const [openColumns, setOpenColumns] = React.useState(false);
+  const [openOrgans, setOpenOrgans] = React.useState(false);
+  const [openCategories, setOpenCategories] = React.useState(false);
+  const [openNazwa, setOpenNazwa] = React.useState(false);
 
   const handleAddSearchParameter = () => {
     if (newParamValue.trim()) {
@@ -139,135 +144,188 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 
   return (
     <div className="filter-section">
-      <h3>
-        Kolumny do wyświetlenia:
-        <button
-          onClick={onCheckAllColumns}
-          className="btn btn-sm btn-primary"
-          style={{ marginLeft: "10px" }}
+      <div className="toggle-section">
+        <h3
+          className="toggle-heading"
+          onClick={() => setOpenColumns((v) => !v)}
         >
-          Zaznacz wszystkie
-        </button>
-        <button
-          onClick={() => onColumnToggle("CLEAR_ALL")}
-          className="btn btn-sm btn-secondary"
-          style={{ marginLeft: "10px" }}
-        >
-          Wyczyść wszystkie
-        </button>
-        <button
-          onClick={onCheckDefaultColumns}
-          className="btn btn-sm btn-secondary"
-          style={{ marginLeft: "10px" }}
-        >
-          Domyślne
-        </button>
-      </h3>
-      <div className="checkbox-grid">
-        {headers.map((header, index) => (
-          <div key={`col_${index}`} className="checkbox-item-inline">
-            <input
-              type="checkbox"
-              id={`col_${index}`}
-              checked={selectedColumns.includes(header)}
-              onChange={() => onColumnToggle(header)}
-            />
-            <label htmlFor={`col_${index}`}>{header}</label>
+          <span className={`toggle-arrow${openColumns ? " open" : ""}`}>
+            &#9658;
+          </span>
+          Kolumny do wyświetlenia:
+          {openColumns && (
+            <span
+              className="toggle-actions"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={onCheckAllColumns}
+                className="btn btn-sm btn-primary"
+              >
+                Zaznacz wszystkie
+              </button>
+              <button
+                onClick={() => onColumnToggle("CLEAR_ALL")}
+                className="btn btn-sm btn-secondary"
+              >
+                Wyczyść wszystkie
+              </button>
+              <button
+                onClick={onCheckDefaultColumns}
+                className="btn btn-sm btn-secondary"
+              >
+                Domyślne
+              </button>
+            </span>
+          )}
+        </h3>
+        {openColumns && (
+          <div className="checkbox-grid">
+            {headers.map((header, index) => (
+              <div key={`col_${index}`} className="checkbox-item-inline">
+                <input
+                  type="checkbox"
+                  id={`col_${index}`}
+                  checked={selectedColumns.includes(header)}
+                  onChange={() => onColumnToggle(header)}
+                />
+                <label htmlFor={`col_${index}`}>{header}</label>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      <h3>
-        Organy administracyjne:
-        <button
-          onClick={handleCheckAllOrgans}
-          className="btn btn-sm btn-primary"
-          style={{ marginLeft: "10px" }}
-        >
-          Zaznacz wszystkie
-        </button>
-        <button
-          onClick={handleClearAllOrgans}
-          className="btn btn-sm btn-secondary"
-          style={{ marginLeft: "10px" }}
-        >
-          Wyczyść wszystkie
-        </button>
-      </h3>
-      <div className="checkbox-grid">
-        {availableOrgans.map((organ) => (
-          <div key={organ} className="checkbox-item-inline">
-            <input
-              type="checkbox"
-              id={`organ_${organ}`}
-              checked={selectedOrgans.includes(organ)}
-              onChange={() => handleOrganToggle(organ)}
-            />
-            <label htmlFor={`organ_${organ}`}>{organ}</label>
+      <div className="toggle-section">
+        <h3 className="toggle-heading" onClick={() => setOpenOrgans((v) => !v)}>
+          <span className={`toggle-arrow${openOrgans ? " open" : ""}`}>
+            &#9658;
+          </span>
+          Organy administracyjne:
+          {openOrgans && (
+            <span
+              className="toggle-actions"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleCheckAllOrgans}
+                className="btn btn-sm btn-primary"
+              >
+                Zaznacz wszystkie
+              </button>
+              <button
+                onClick={handleClearAllOrgans}
+                className="btn btn-sm btn-secondary"
+              >
+                Wyczyść wszystkie
+              </button>
+            </span>
+          )}
+        </h3>
+        {openOrgans && (
+          <div className="checkbox-grid">
+            {availableOrgans.map((organ) => (
+              <div key={organ} className="checkbox-item-inline">
+                <input
+                  type="checkbox"
+                  id={`organ_${organ}`}
+                  checked={selectedOrgans.includes(organ)}
+                  onChange={() => handleOrganToggle(organ)}
+                />
+                <label htmlFor={`organ_${organ}`}>{organ}</label>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      <h3>
-        Kategorie:
-        <button
-          onClick={handleCheckAllCategories}
-          className="btn btn-sm btn-primary"
-          style={{ marginLeft: "10px" }}
+      <div className="toggle-section">
+        <h3
+          className="toggle-heading"
+          onClick={() => setOpenCategories((v) => !v)}
         >
-          Zaznacz wszystkie
-        </button>
-        <button
-          onClick={handleClearAllCategories}
-          className="btn btn-sm btn-secondary"
-          style={{ marginLeft: "10px" }}
-        >
-          Wyczyść wszystkie
-        </button>
-      </h3>
-      <div className="checkbox-grid">
-        {POSIBLE_CATEGORIES.map((category) => (
-          <div key={category} className="checkbox-item-inline">
-            <input
-              type="checkbox"
-              id={`cat_${category}`}
-              checked={selectedCategories.includes(category)}
-              onChange={() => handleCategoryToggle(category)}
-            />
-            <label htmlFor={`cat_${category}`}>{category}</label>
+          <span className={`toggle-arrow${openCategories ? " open" : ""}`}>
+            &#9658;
+          </span>
+          Kategorie:
+          {openCategories && (
+            <span
+              className="toggle-actions"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleCheckAllCategories}
+                className="btn btn-sm btn-primary"
+              >
+                Zaznacz wszystkie
+              </button>
+              <button
+                onClick={handleClearAllCategories}
+                className="btn btn-sm btn-secondary"
+              >
+                Wyczyść wszystkie
+              </button>
+            </span>
+          )}
+        </h3>
+        {openCategories && (
+          <div className="checkbox-grid">
+            {POSIBLE_CATEGORIES.map((category) => (
+              <div key={category} className="checkbox-item-inline">
+                <input
+                  type="checkbox"
+                  id={`cat_${category}`}
+                  checked={selectedCategories.includes(category)}
+                  onChange={() => handleCategoryToggle(category)}
+                />
+                <label htmlFor={`cat_${category}`}>{category}</label>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      <h3>
-        Nazwa zamierzenia budowlanego:
-        <button
-          onClick={handleCheckAllNazwa}
-          className="btn btn-sm btn-primary"
-          style={{ marginLeft: "10px" }}
-        >
-          Zaznacz wszystkie
-        </button>
-        <button
-          onClick={handleClearAllNazwa}
-          className="btn btn-sm btn-secondary"
-          style={{ marginLeft: "10px" }}
-        >
-          Wyczyść wszystkie
-        </button>
-      </h3>
-      <div className="checkbox-grid">
-        {availableNazwaZamierzenia.map((nazwa) => (
-          <div key={nazwa} className="checkbox-item-inline">
-            <input
-              type="checkbox"
-              id={`nazwa_${nazwa}`}
-              checked={selectedNazwaZamierzenia.includes(nazwa)}
-              onChange={() => handleNazwaToggle(nazwa)}
-            />
-            <label htmlFor={`nazwa_${nazwa}`}>{nazwa}</label>
+      <div className="toggle-section">
+        <h3 className="toggle-heading" onClick={() => setOpenNazwa((v) => !v)}>
+          <span className={`toggle-arrow${openNazwa ? " open" : ""}`}>
+            &#9658;
+          </span>
+          Nazwa zamierzenia budowlanego:
+          {openNazwa && (
+            <span
+              className="toggle-actions"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleCheckAllNazwa}
+                className="btn btn-sm btn-primary"
+              >
+                Zaznacz wszystkie
+              </button>
+              <button
+                onClick={handleClearAllNazwa}
+                className="btn btn-sm btn-secondary"
+              >
+                Wyczyść wszystkie
+              </button>
+            </span>
+          )}
+        </h3>
+        {openNazwa && (
+          <div className="checkbox-grid">
+            {availableNazwaZamierzenia.map((nazwa) => (
+              <div key={nazwa} className="checkbox-item-inline">
+                <input
+                  type="checkbox"
+                  id={`nazwa_${nazwa}`}
+                  checked={selectedNazwaZamierzenia.includes(nazwa)}
+                  onChange={() => handleNazwaToggle(nazwa)}
+                />
+                <label htmlFor={`nazwa_${nazwa}`}>{nazwa}</label>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
       <h3>Filtry:</h3>
