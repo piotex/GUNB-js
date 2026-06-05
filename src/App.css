@@ -409,6 +409,122 @@ h3 {
   margin-left: 4px;
 }
 
+/* ── Postal code help ────────────────────────────────────────────── */
+.postal-help-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.postal-help-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #6b7280;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.postal-help-btn:hover {
+  background: #e5e7eb;
+  border-color: #374151;
+}
+
+.postal-help-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #f1f5f9;
+  border-radius: 8px;
+  padding: 12px 14px 10px;
+  width: 300px;
+  font-size: 13px;
+  line-height: 1.55;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  z-index: 1500;
+}
+
+.postal-help-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1e293b;
+}
+
+.postal-help-tooltip strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #f8fafc;
+}
+
+.postal-help-tooltip p {
+  margin: 0 0 6px;
+}
+
+.postal-help-tooltip p:last-child {
+  margin-bottom: 0;
+}
+
+.postal-help-tooltip code {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.postal-help-tooltip-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+.postal-help-tooltip-close:hover {
+  color: #f1f5f9;
+}
+
+/* Column tooltip variant — opens to the right to avoid overflow in narrow cells */
+.postal-help-tooltip.col-tooltip {
+  left: auto;
+  right: auto;
+  bottom: auto;
+  top: calc(100% + 6px);
+  transform: translateX(-40%);
+  width: 260px;
+}
+
+.postal-help-tooltip.col-tooltip::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: #1e293b;
+}
+
 .checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -599,6 +715,177 @@ select.form-control {
 /* Data Display Container */
 .data-display-container {
   margin: 0 0 30px 0;
+}
+
+/* ── Map Panel ─────────────────────────────────────────────────── */
+.map-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  display: flex;
+  padding: 16px;
+  align-items: stretch;
+}
+
+.map-panel-inner {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+.map-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: #1e293b;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.map-panel-header > span:first-child {
+  flex: 1;
+}
+
+.map-geocoding-badge {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.map-panel-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.map-side-panel {
+  width: 340px;
+  min-width: 260px;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.map-side-city-header {
+  padding: 12px 14px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-shrink: 0;
+}
+
+.map-side-city-header strong {
+  font-size: 14px;
+}
+
+.map-side-city-header span {
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.map-side-postcode {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.map-side-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.map-side-item {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.map-side-item-clickable {
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.map-side-item-clickable:hover {
+  background-color: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.map-side-item-id {
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 2px;
+}
+
+.map-side-item-investor {
+  color: #374151;
+  margin-bottom: 2px;
+}
+
+.map-side-item-date {
+  color: #6b7280;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.map-side-item-desc {
+  color: #4b5563;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.map-side-more {
+  text-align: center;
+  color: #64748b;
+  padding: 10px;
+  font-size: 12px;
+}
+
+.map-side-hint {
+  padding: 20px 14px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.map-side-warning {
+  color: #dc2626;
+  margin-top: 8px;
+}
+
+.map-leaflet-container {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
 }
 
 .loading-more-banner {

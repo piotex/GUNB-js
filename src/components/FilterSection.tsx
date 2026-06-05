@@ -19,6 +19,8 @@ interface FilterSectionProps {
   onNazwaZamierzeniaChange: (nazwa: string[]) => void;
   onSearchParametersChange: (params: SearchParameter[]) => void;
   onDateRangeChange?: (from: string | null, to: string | null) => void;
+  onPostalCodeChange?: (value: string) => void;
+  columnTooltips?: Record<string, string>;
 }
 
 const FilterSection: React.FC<FilterSectionProps> = ({
@@ -38,7 +40,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   onNazwaZamierzeniaChange,
   onSearchParametersChange,
   onDateRangeChange,
+  onPostalCodeChange,
+  columnTooltips = {},
 }) => {
+  const [openColTooltip, setOpenColTooltip] = React.useState<string | null>(
+    null,
+  );
   const [newParamKey, setNewParamKey] = React.useState(headers[0] || "");
   const [newParamValue, setNewParamValue] = React.useState("");
   // default dateFrom = 3 months ago, dateTo = today
@@ -59,6 +66,13 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     threeMonthsAgoStr,
   );
   const [dateTo, setDateTo] = React.useState<string | null>(todayStr);
+
+  const [postalCode, setPostalCode] = React.useState("");
+  const [postalHelpOpen, setPostalHelpOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (onPostalCodeChange) onPostalCodeChange(postalCode);
+  }, [postalCode]);
 
   const [openColumns, setOpenColumns] = React.useState(false);
   const [openOrgans, setOpenOrgans] = React.useState(false);
@@ -190,6 +204,39 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                   onChange={() => onColumnToggle(header)}
                 />
                 <label htmlFor={`col_${index}`}>{header}</label>
+                {columnTooltips[header] && (
+                  <span
+                    className="postal-help-wrapper"
+                    style={{ marginLeft: "6px" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="postal-help-btn"
+                      type="button"
+                      onClick={() =>
+                        setOpenColTooltip((v) => (v === header ? null : header))
+                      }
+                      aria-label={`Pomoc: ${header}`}
+                    >
+                      ?
+                    </button>
+                    {openColTooltip === header && (
+                      <div
+                        className="postal-help-tooltip col-tooltip"
+                        role="tooltip"
+                      >
+                        <button
+                          className="postal-help-tooltip-close"
+                          onClick={() => setOpenColTooltip(null)}
+                          aria-label="Zamknij"
+                        >
+                          ✕
+                        </button>
+                        <p>{columnTooltips[header]}</p>
+                      </div>
+                    )}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -357,6 +404,65 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         />
         <span style={{ marginLeft: "8px", color: "#333" }}>
           {formatEuropean(dateTo)}
+        </span>
+        <label style={{ marginRight: "8px", marginLeft: "24px" }}>
+          Kod pocztowy:
+        </label>
+        <input
+          type="text"
+          value={postalCode}
+          onChange={(e) => setPostalCode(e.target.value)}
+          placeholder="np. 02-123"
+          className="form-control"
+          style={{ display: "inline-block", width: "130px" }}
+        />
+        {postalCode && (
+          <button
+            className="btn btn-sm btn-secondary"
+            style={{ marginLeft: "8px" }}
+            onClick={() => setPostalCode("")}
+          >
+            ✕
+          </button>
+        )}
+        <span className="postal-help-wrapper" style={{ marginLeft: "8px" }}>
+          <button
+            className="postal-help-btn"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPostalHelpOpen((v) => !v);
+            }}
+            aria-label="Pomoc: filtr kodu pocztowego"
+          >
+            ?
+          </button>
+          {postalHelpOpen && (
+            <div className="postal-help-tooltip" role="tooltip">
+              <button
+                className="postal-help-tooltip-close"
+                onClick={() => setPostalHelpOpen(false)}
+                aria-label="Zamknij"
+              >
+                ✕
+              </button>
+              <strong>Filtr kodu pocztowego</strong>
+              <p>
+                Wpisz dowolny fragment kodu pocztowego (np. <code>02-123</code>)
+                lub inną frazę adresową.
+              </p>
+              <p>
+                Filtr przeszukuje <em>wszystkie kolumny</em> każdego wiersza —
+                jeśli wpisana fraza pojawi się gdziekolwiek w rekordzie (adres
+                organu, adres inwestora, inne pola), wiersz zostanie zachowany.
+              </p>
+              <p>
+                Wyszukiwanie jest <em>częściowe</em> i{" "}
+                <em>niewrażliwe na wielkość liter</em> — wpisanie{" "}
+                <code>02</code> pokaże wszystkie rekordy zawierające ciąg „02".
+              </p>
+            </div>
+          )}
         </span>
       </div>
       <div className="search-parameters">
