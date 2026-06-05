@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import "./App.css";
 import { DataRow } from "./types";
 import {
@@ -8,20 +9,84 @@ import {
   getStateFromItem,
 } from "./utils";
 import { CHECKBOXES_YEARS, POSIBLE_ORGANS } from "./constants";
-import FileUpload from "./components/FileUpload";
-import DataDisplay from "./components/DataDisplay";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import LoadingOverlay from "./components/LoadingOverlay";
+import UploadPage from "./pages/UploadPage";
+import DataPage from "./pages/DataPage";
+import AboutPage from "./pages/AboutPage";
+import TermsPage from "./pages/TermsPage";
 
 function App() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [headersFromFile, setHeadersFromFile] = useState<string[]>([]);
   const [dataFromFile, setDataFromFile] = useState<DataRow[]>([]);
+  const [rawData, setRawData] = useState<DataRow[]>([]); // Store unfiltered data
   const [selectedYears, setSelectedYears] = useState<string[]>([
     new Date().getFullYear().toString(),
   ]);
   const [selectedStates, setSelectedStates] = useState<string[]>([
     "mazowieckie",
   ]);
-  const [fileUploaded, setFileUploaded] = useState(false);
+
+  // Function to filter data based on selected years and states
+  const filterData = (data: DataRow[], headers: string[]) => {
+    console.log("=== FILTERING DATA ===");
+    console.log("Total rows:", data.length);
+
+    const rejectedRows: { index: number; reason: string; data: DataRow }[] = [];
+
+    const filteredData = data.filter((item, index) => {
+      const year = getYearFromItem(item, headers);
+      const state = getStateFromItem(item, headers);
+
+      if (!year || !state) {
+        rejectedRows.push({
+          index: index + 2,
+          reason: `Missing year (${year}) or state (${state})`,
+          data: item,
+        });
+        return false;
+      }
+      if (!selectedYears.includes(year)) {
+        rejectedRows.push({
+          index: index + 2,
+          reason: `Year ${year} not in selected years`,
+          data: item,
+        });
+        return false;
+      }
+      if (!selectedStates.includes(state)) {
+        rejectedRows.push({
+          index: index + 2,
+          reason: `State ${state} not in selected states`,
+          data: item,
+        });
+        return false;
+      }
+
+      return true;
+    });
+
+    console.log("Rows after filtering:", filteredData.length);
+    console.log("Rejected rows:", rejectedRows.length);
+
+    return sortDataByDate(filteredData, headers);
+  };
+
+  // Re-filter data when filters change
+  useEffect(() => {
+    if (rawData.length > 0 && headersFromFile.length > 0) {
+      setLoading(true);
+      // Use setTimeout to allow loading overlay to render
+      setTimeout(() => {
+        const filtered = filterData(rawData, headersFromFile);
+        setDataFromFile(filtered);
+        setLoading(false);
+      }, 100);
+    }
+  }, [selectedYears, selectedStates]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -41,73 +106,18 @@ function App() {
       const csvData = e.target?.result as string;
       const { headers, data } = parseCSV(csvData);
 
-      console.log("=== DIAGNOSTIC INFO ===");
+      console.log("=== CSV PARSED ===");
       console.log("Total rows parsed:", data.length);
-      console.log("CSV total lines:", csvData.split("\n").length - 1); // -1 for header
+      console.log("CSV total lines:", csvData.split("\n").length - 1);
 
-      // Diagnostic: track rejected rows
-      const rejectedRows: { index: number; reason: string; data: DataRow }[] =
-        [];
-
-      // Filter data by selected years and states
-      const filteredData = data.filter((item, index) => {
-        const year = getYearFromItem(item, headers);
-        const state = getStateFromItem(item, headers);
-
-        if (!year || !state) {
-          rejectedRows.push({
-            index: index + 2, // +2 because: +1 for header, +1 for 0-based index
-            reason: `Missing year (${year}) or state (${state})`,
-            data: item,
-          });
-          return false;
-        }
-        if (!selectedYears.includes(year)) {
-          rejectedRows.push({
-            index: index + 2,
-            reason: `Year ${year} not in selected years`,
-            data: item,
-          });
-          return false;
-        }
-        if (!selectedStates.includes(state)) {
-          rejectedRows.push({
-            index: index + 2,
-            reason: `State ${state} not in selected states`,
-            data: item,
-          });
-          return false;
-        }
-
-        return true;
-      });
-
-      console.log("Rows after filtering:", filteredData.length);
-      console.log("Rejected rows:", rejectedRows.length);
-
-      if (rejectedRows.length > 0) {
-        console.log("First 10 rejected rows:");
-        rejectedRows.slice(0, 10).forEach(({ index, reason, data }) => {
-          const dateKey = headers.includes("data_wplywu_wniosku_do_urzedu")
-            ? "data_wplywu_wniosku_do_urzedu"
-            : "data_wplywu_wniosku";
-          const stateKey = headers.includes("wojewodztwo_objekt")
-            ? "wojewodztwo_objekt"
-            : "wojewodztwo";
-
-          console.log(`Row ${index}: ${reason}`);
-          console.log(
-            `  Date: "${data[dateKey]}" | State: "${data[stateKey]}"`
-          );
-        });
-      }
-
-      const sortedData = sortDataByDate(filteredData, headers);
-
+      setRawData(data);
       setHeadersFromFile(headers);
-      setDataFromFile(sortedData);
-      setFileUploaded(true);
+
+      const filteredData = filterData(data, headers);
+      setDataFromFile(filteredData);
+
       setLoading(false);
+      navigate("/data");
     };
 
     reader.readAsText(file);
@@ -129,31 +139,60 @@ function App() {
     setSelectedYears(CHECKBOXES_YEARS);
   };
 
+  const handleClearAllYears = () => {
+    setSelectedYears([]);
+  };
+
   const handleCheckAllStates = () => {
     setSelectedStates(Object.keys(POSIBLE_ORGANS));
   };
 
+  const handleClearAllStates = () => {
+    setSelectedStates([]);
+  };
+
+  const handleHomeClick = () => {
+    setHeadersFromFile([]);
+    setDataFromFile([]);
+    setRawData([]);
+    setSelectedYears([new Date().getFullYear().toString()]);
+    setSelectedStates(["mazowieckie"]);
+    navigate("/");
+  };
+
   return (
-    <div className="App">
-      {!fileUploaded ? (
-        <FileUpload
-          loading={loading}
-          selectedYears={selectedYears}
-          selectedStates={selectedStates}
-          onYearChange={handleYearChange}
-          onStateChange={handleStateChange}
-          onCheckAllYears={handleCheckAllYears}
-          onCheckAllStates={handleCheckAllStates}
-          onFileUpload={handleFileUpload}
-        />
-      ) : (
-        <DataDisplay
-          headers={headersFromFile}
-          data={dataFromFile}
-          onReset={() => window.location.reload()}
-        />
-      )}
-    </div>
+    <>
+      <Navbar hasData={dataFromFile.length > 0} onHomeClick={handleHomeClick} />
+      <div className="App">
+        {loading && <LoadingOverlay message="Przetwarzanie pliku CSV..." />}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <UploadPage
+                loading={loading}
+                selectedYears={selectedYears}
+                selectedStates={selectedStates}
+                onYearChange={handleYearChange}
+                onStateChange={handleStateChange}
+                onCheckAllYears={handleCheckAllYears}
+                onClearAllYears={handleClearAllYears}
+                onCheckAllStates={handleCheckAllStates}
+                onClearAllStates={handleClearAllStates}
+                onFileUpload={handleFileUpload}
+              />
+            }
+          />
+          <Route
+            path="/data"
+            element={<DataPage headers={headersFromFile} data={dataFromFile} />}
+          />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+        </Routes>
+      </div>
+      <Footer />
+    </>
   );
 }
 

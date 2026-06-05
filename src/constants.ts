@@ -1,7 +1,8 @@
-// Generate years from 2000 to 2030
+// Generate last 5 years from current year
 export const generateYears = (): string[] => {
+  const currentYear = new Date().getFullYear();
   const years: string[] = [];
-  for (let i = 2000; i <= 2030; i++) {
+  for (let i = currentYear; i >= currentYear - 4; i--) {
     years.push(i.toString());
   }
   return years;
@@ -483,6 +484,8 @@ export const POSIBLE_ORGANS: { [key: string]: string[] } = {
 
 export const DEFAULT_COLUMNS = [
   "nazwa_organu",
+  "data_wplywu_wniosku",
+  "numer_decyzji",
   "numer_decyzji_urzedu",
   "data_wydania_decyzji",
   "nazwa_inwestor",
@@ -490,4 +493,6 @@ export const DEFAULT_COLUMNS = [
   "miasto",
   "nazwa_zam_budowlanego",
   "kubatura",
+  "projektant_nazwisko",
+  "projektant_imie",
 ];

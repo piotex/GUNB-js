@@ -8,7 +8,9 @@ interface FileUploadProps {
   onYearChange: (year: string) => void;
   onStateChange: (state: string) => void;
   onCheckAllYears: () => void;
+  onClearAllYears: () => void;
   onCheckAllStates: () => void;
+  onClearAllStates: () => void;
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -19,7 +21,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
   onYearChange,
   onStateChange,
   onCheckAllYears,
+  onClearAllYears,
   onCheckAllStates,
+  onClearAllStates,
   onFileUpload,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -101,7 +105,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   return (
     <div className="file-upload-container">
       <h1 style={{ textAlign: "center", color: "#333", marginBottom: "30px" }}>
-        System Analizy Danych GUNB
+        CzytnikCSV - Przeglądarka danych
       </h1>
 
       <h3 style={{ fontWeight: 700, marginBottom: "15px" }}>
@@ -112,6 +116,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
           style={{ marginLeft: "10px" }}
         >
           Zaznacz wszystkie
+        </button>
+        <button
+          onClick={onClearAllYears}
+          className="btn btn-secondary btn-sm"
+          style={{ marginLeft: "10px" }}
+        >
+          Wyczyść wszystkie
         </button>
       </h3>
       <div className="checkboxes-container">
@@ -139,6 +150,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
         >
           Zaznacz wszystkie
         </button>
+        <button
+          onClick={onClearAllStates}
+          className="btn btn-secondary btn-sm"
+          style={{ marginLeft: "10px" }}
+        >
+          Wyczyść wszystkie
+        </button>
       </h3>
       <div className="checkboxes-container">
         {Object.keys(POSIBLE_ORGANS).map((state) => (
@@ -156,31 +174,27 @@ const FileUpload: React.FC<FileUploadProps> = ({
       </div>
       <div style={{ height: "40px" }}></div>
 
-      {loading ? (
-        <div className="loader"></div>
-      ) : (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <input
-            style={{ display: "none" }}
-            type="file"
-            id="file-input"
-            accept=".csv"
-            onChange={onFileUpload}
-          />
-          <div
-            className={`custom-file-upload ${isDragging ? "dragging" : ""}`}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onClick={() => document.getElementById("file-input")?.click()}
-          >
-            📁 Przeciągnij tutaj plik CSV
-            <br />
-            <span style={{ fontSize: "18px" }}>lub kliknij aby wybrać</span>
-          </div>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <input
+          style={{ display: "none" }}
+          type="file"
+          id="file-input"
+          accept=".csv"
+          onChange={onFileUpload}
+        />
+        <div
+          className={`custom-file-upload ${isDragging ? "dragging" : ""}`}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onClick={() => document.getElementById("file-input")?.click()}
+        >
+          📁 Przeciągnij tutaj plik CSV
+          <br />
+          <span style={{ fontSize: "18px" }}>lub kliknij aby wybrać</span>
         </div>
-      )}
+      </div>
     </div>
   );
 };

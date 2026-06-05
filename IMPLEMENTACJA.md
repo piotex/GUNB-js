@@ -1,4 +1,4 @@
-# Implementacja GUNB-js w React
+# Implementacja CzytnikCSV w React
 
 ## Struktura projektu
 
@@ -19,11 +19,13 @@ src/
 ## Główne komponenty
 
 ### App.tsx
+
 - **Stan główny aplikacji**: przechowuje dane, nagłówki, wybrane lata i województwa
 - **Obsługa wczytywania pliku**: parsowanie CSV, filtrowanie wstępne, sortowanie
 - **Routing między widokami**: FileUpload → DataDisplay
 
 ### FileUpload.tsx
+
 - Wybór lat (2000-2030) z możliwością zaznaczenia wszystkich
 - Wybór województw z możliwością zaznaczenia wszystkich
 - Wczytywanie pliku CSV z separatorem `#`
@@ -31,6 +33,7 @@ src/
 - Blokowanie checkboxów podczas wczytywania
 
 ### DataDisplay.tsx
+
 - **Filtry zaawansowane**:
   - Wybór kolumn do wyświetlenia
   - Filtrowanie po organach administracyjnych
@@ -42,6 +45,7 @@ src/
 - **Przycisk powrotu**: reset aplikacji
 
 ### FilterSection.tsx
+
 - Sekcja "Kolumny do wyświetlenia" z przyciskami "Wszystkie" i "Domyślne"
 - Sekcja "Organy administracyjne" z możliwością zaznaczenia wszystkich
 - Sekcja "Kategorie" z możliwością zaznaczenia wszystkich
@@ -49,6 +53,7 @@ src/
 - Tabela filtrów niestandardowych z możliwością dodawania i usuwania
 
 ### DataTable.tsx
+
 - Wyświetlanie danych w formie tabeli
 - **Sortowanie po kliknięciu w nagłówek**:
   - Pierwsze kliknięcie: sortowanie rosnące ▲
@@ -59,22 +64,27 @@ src/
 ## Funkcje pomocnicze (utils.ts)
 
 ### parseCSV()
+
 - Parsuje plik CSV z separatorem `#`
 - Zwraca nagłówki i dane jako obiekty
 
 ### sortDataByDate()
+
 - Sortuje dane według daty wpływu wniosku
 - Obsługuje różne warianty nazw kolumn
 
 ### getYearFromItem()
+
 - Wyciąga rok z daty wpływu wniosku
 - Walidacja (tylko lata zaczynające się od "2")
 
 ### getStateFromItem()
+
 - Wyciąga województwo z rekordu
 - Obsługuje różne warianty nazw kolumn
 
 ### getNazwaZamierzeniaKey()
+
 - Zwraca poprawną nazwę kolumny dla nazwy zamierzenia
 - Obsługuje warianty: `nazwa_zamierzenia_bud` / `rodzaj_zam_budowlanego`
 
@@ -88,6 +98,7 @@ src/
 ## Obsługa różnych formatów danych
 
 Aplikacja automatycznie wykrywa i obsługuje różne warianty nazw kolumn:
+
 - `data_wplywu_wniosku` / `data_wplywu_wniosku_do_urzedu`
 - `wojewodztwo` / `wojewodztwo_objekt`
 - `nazwa_zamierzenia_bud` / `rodzaj_zam_budowlanego`
@@ -95,11 +106,13 @@ Aplikacja automatycznie wykrywa i obsługuje różne warianty nazw kolumn:
 ## Filtrowanie danych
 
 ### Filtrowanie wstępne (podczas wczytywania)
+
 1. Rok musi być w zakresie wybranych lat
 2. Województwo musi być w zakresie wybranych województw
 3. Dane są sortowane po dacie (od najnowszych)
 
 ### Filtrowanie zaawansowane (po wczytaniu)
+
 1. **Nazwa zamierzenia**: musi pasować do wybranych opcji
 2. **Organ**: musi być w liście wybranych organów
 3. **Kategoria**: musi być w liście wybranych kategorii
@@ -117,10 +130,12 @@ Aplikacja automatycznie wykrywa i obsługuje różne warianty nazw kolumn:
 ## Różnice od oryginału
 
 ### Uproszczenia:
+
 - Usunięto deduplikację (funkcja `filter_unique()`) - można łatwo dodać
 - Usunięto przyciski "Pokaż unikalne" - można łatwo dodać
 
 ### Ulepszenia:
+
 - Kod w TypeScript (type safety)
 - Komponentowa architektura (łatwiejsze utrzymanie)
 - React hooks (nowoczesny stan aplikacji)

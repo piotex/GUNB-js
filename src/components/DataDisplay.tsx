@@ -8,14 +8,9 @@ import DataTable from "./DataTable";
 interface DataDisplayProps {
   headers: string[];
   data: DataRow[];
-  onReset: () => void;
 }
 
-const DataDisplay: React.FC<DataDisplayProps> = ({
-  headers,
-  data,
-  onReset,
-}) => {
+const DataDisplay: React.FC<DataDisplayProps> = ({ headers, data }) => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(
     DEFAULT_COLUMNS.filter((col) => headers.includes(col))
   );
@@ -26,13 +21,18 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
     string[]
   >([]);
   const [searchParameters, setSearchParameters] = useState<SearchParameter[]>(
-    []
+    // Default filter: nazwa_zam_budowlanego = 'budynków' if the header exists
+    headers.includes("nazwa_zam_budowlanego")
+      ? [{ nazwa_zam_budowlanego: "budynków" } as SearchParameter]
+      : []
   );
   const [maxElements, setMaxElements] = useState<number>(100);
   const [availableOrgans, setAvailableOrgans] = useState<string[]>([]);
   const [availableNazwaZamierzenia, setAvailableNazwaZamierzenia] = useState<
     string[]
   >([]);
+  const [dateFrom, setDateFrom] = useState<string | null>("2020-01-01");
+  const [dateTo, setDateTo] = useState<string | null>("2023-12-31");
 
   useEffect(() => {
     // Get available organs based on data
@@ -63,6 +63,35 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
 
   const filterData = (): DataRow[] => {
     const nazwaKey = getNazwaZamierzeniaKey(headers);
+    // choose date key: try data_wplywu_wniosku_do_urzedu then data_wplywu_wniosku then data_wydania_decyzji
+    const dateKey = headers.includes("data_wplywu_wniosku_do_urzedu")
+      ? "data_wplywu_wniosku_do_urzedu"
+      : headers.includes("data_wplywu_wniosku")
+      ? "data_wplywu_wniosku"
+      : headers.includes("data_wydania_decyzji")
+      ? "data_wydania_decyzji"
+      : null;
+
+    const parseDateString = (s: string | undefined | null): Date | null => {
+      if (!s) return null;
+      const t = s.toString().trim();
+      if (!t) return null;
+      // try ISO-like first (YYYY-MM-DD or with time)
+      const iso = t.slice(0, 10);
+      // YYYY-MM-DD or YYYY/MM/DD
+      if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(iso)) return new Date(iso);
+      // DD.MM.YYYY -> convert
+      if (/^\d{2}\.\d{2}\.\d{4}$/.test(iso)) {
+        const parts = iso.split(".");
+        const dd = parts[0];
+        const mm = parts[1];
+        const yyyy = parts[2];
+        return new Date(`${yyyy}-${mm}-${dd}`);
+      }
+      // fallback: let Date try parsing
+      const d = new Date(t);
+      return isNaN(d.getTime()) ? null : d;
+    };
 
     return data.filter((item) => {
       // Filter by nazwa zamierzenia
@@ -92,13 +121,56 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
         }
       }
 
+      // Filter by date range if applicable
+      if (dateKey && (dateFrom || dateTo)) {
+        const raw = item[dateKey] || "";
+        const itemDate = parseDateString(raw);
+        if (itemDate) {
+          if (dateFrom) {
+            const fromDate = parseDateString(dateFrom) as Date;
+            if (fromDate && itemDate < fromDate) return false;
+          }
+          if (dateTo) {
+            const toDate = parseDateString(dateTo) as Date;
+            if (toDate && itemDate > toDate) return false;
+          }
+        } else {
+          // If we couldn't parse item date, exclude it to be safe
+          return false;
+        }
+      }
+
       return true;
     });
   };
 
   const filteredData = filterData();
 
+  const [showUnique, setShowUnique] = useState<boolean>(false);
+
+  const getUniqueByKey = (rows: DataRow[], key: string) => {
+    const seen = new Set<string>();
+    const unique: DataRow[] = [];
+    for (const r of rows) {
+      const val = (r[key] || "").toString();
+      if (!seen.has(val)) {
+        seen.add(val);
+        unique.push(r);
+      }
+    }
+    return unique;
+  };
+
+  const uniqueFilteredData = getUniqueByKey(
+    filteredData,
+    "numer_decyzji_urzedu"
+  );
+
   const handleColumnToggle = (column: string) => {
+    if (column === "CLEAR_ALL") {
+      setSelectedColumns([]);
+      return;
+    }
     setSelectedColumns((prev) =>
       prev.includes(column)
         ? prev.filter((c) => c !== column)
@@ -116,10 +188,6 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
 
   return (
     <div className="data-display-container">
-      <button className="btn btn-danger" onClick={onReset}>
-        Powrót
-      </button>
-
       <FilterSection
         headers={headers}
         selectedColumns={selectedColumns}
@@ -136,10 +204,31 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
         onCategoryChange={setSelectedCategories}
         onNazwaZamierzeniaChange={setSelectedNazwaZamierzenia}
         onSearchParametersChange={setSearchParameters}
+        onDateRangeChange={(from, to) => {
+          setDateFrom(from);
+          setDateTo(to);
+        }}
       />
 
       <h3>Podsumowanie:</h3>
       <div className="summary">
+        <button
+          className={`btn btn-sm ${showUnique ? "btn-primary" : ""}`}
+          onClick={() => setShowUnique((s) => !s)}
+          style={{
+            marginBottom: "10px",
+            backgroundColor: showUnique ? undefined : "#f0ad4e",
+            color: showUnique ? undefined : "#000",
+            borderColor: showUnique ? undefined : "#d4882b",
+          }}
+        >
+          {showUnique
+            ? "Pokaż wszystkie"
+            : "Pokaż tylko unikalne (numer_decyzji_urzedu)"}
+        </button>
+        <br />
+        <strong>Ilość elementów (unikalne):</strong> {uniqueFilteredData.length}
+        <br />
         <strong>Liczba elementów spełniających wszystkie filtry:</strong>{" "}
         {filteredData.length}
         <br />
@@ -166,7 +255,7 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
 
       <h3>Dane:</h3>
       <DataTable
-        data={filteredData}
+        data={showUnique ? uniqueFilteredData : filteredData}
         headers={headers}
         selectedColumns={selectedColumns}
         maxElements={maxElements}

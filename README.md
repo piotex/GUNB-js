@@ -1,6 +1,6 @@
-# GUNB-js
+# CzytnikCSV
 
-Aplikacja do analizy danych z GUNB (Główny Urząd Nadzoru Budowlanego) - pozwoleń na budowę w Polsce.
+Aplikacja do analizy danych CSV z pozwoleń na budowę w Polsce.
 
 ## Opis funkcjonalności
 
@@ -9,7 +9,6 @@ Aplikacja do analizy danych z GUNB (Główny Urząd Nadzoru Budowlanego) - pozwo
 1. **Wczytywanie danych CSV**
 
    - Format pliku: CSV z separatorem `#`
-   - Źródło danych: https://wyszukiwarka.gunb.gov.pl/pobranie.html
    - Automatyczne parsowanie nagłówków i danych
 
 2. **Filtrowanie wstępne (przed wczytaniem pliku)**
@@ -55,8 +54,9 @@ Aplikacja obsługuje różne warianty nazw kolumn:
 - **Responsywność**: wykorzystanie Bootstrap 3.4.1
 
 ## Uruchomienie wersji React
+
 ```
-cd /mnt/c/Users/pkubon/kn/0-git-repos/GUNB-js
+cd /mnt/c/Users/pkubon/kn/0-git-repos/CzytnikCSV
 ```
 
 ```bash
@@ -73,4 +73,3 @@ npm run build
 ## Źródło danych
 
 https://wyszukiwarka.gunb.gov.pl/pobranie.html
-
