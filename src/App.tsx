@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import "./App.css";
 import { DataRow } from "./types";
 import {
   parseCSV,
+  parseCSVHeadersAndSeparator,
+  parseCSVBatch,
   sortDataByDate,
   getYearFromItem,
   getStateFromItem,
@@ -17,9 +19,15 @@ import DataPage from "./pages/DataPage";
 import AboutPage from "./pages/AboutPage";
 import TermsPage from "./pages/TermsPage";
 
+const CHUNK_SIZE = 2000;
+
 function App() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadedRows, setLoadedRows] = useState(0);
+  const [totalRows, setTotalRows] = useState(0);
+  const chunkTokenRef = useRef(0);
   const [headersFromFile, setHeadersFromFile] = useState<string[]>([]);
   const [dataFromFile, setDataFromFile] = useState<DataRow[]>([]);
   const [rawData, setRawData] = useState<DataRow[]>([]); // Store unfiltered data
@@ -99,25 +107,76 @@ function App() {
       return;
     }
 
+    // Cancel any in-progress chunk processing
+    chunkTokenRef.current += 1;
+    const myToken = chunkTokenRef.current;
+
     setLoading(true);
+    setLoadingMore(false);
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const csvData = e.target?.result as string;
-      const { headers, data } = parseCSV(csvData);
+      const lines = csvData.split("\n");
 
-      console.log("=== CSV PARSED ===");
-      console.log("Total rows parsed:", data.length);
-      console.log("CSV total lines:", csvData.split("\n").length - 1);
+      if (lines.length < 2) {
+        setLoading(false);
+        return;
+      }
 
-      setRawData(data);
+      const { headers, separator } = parseCSVHeadersAndSeparator(lines[0]);
+      const capturedYears = [...selectedYears];
+      const capturedStates = [...selectedStates];
+      const lineCount = lines.length - 1;
+
       setHeadersFromFile(headers);
-
-      const filteredData = filterData(data, headers);
-      setDataFromFile(filteredData);
-
+      setRawData([]);
+      setDataFromFile([]);
+      setTotalRows(lineCount);
+      setLoadedRows(0);
       setLoading(false);
       navigate("/data");
+      setLoadingMore(true);
+
+      let idx = 1;
+      const accRaw: DataRow[] = [];
+
+      const filterBatch = (data: DataRow[]) =>
+        data.filter((item) => {
+          const year = getYearFromItem(item, headers);
+          const state = getStateFromItem(item, headers);
+          return (
+            year &&
+            state &&
+            capturedYears.includes(year) &&
+            capturedStates.includes(state)
+          );
+        });
+
+      const processChunk = () => {
+        if (chunkTokenRef.current !== myToken) return; // cancelled
+
+        const batch = parseCSVBatch(lines, idx, CHUNK_SIZE, headers, separator);
+        idx += CHUNK_SIZE;
+        accRaw.push(...batch);
+
+        const isDone = idx >= lines.length;
+
+        if (isDone) {
+          const filtered = filterBatch(accRaw);
+          const sorted = sortDataByDate(filtered, headers);
+          setRawData(accRaw);
+          setDataFromFile(sorted);
+          setLoadedRows(accRaw.length);
+          setLoadingMore(false);
+        } else {
+          setDataFromFile(filterBatch(accRaw));
+          setLoadedRows(accRaw.length);
+          setTimeout(processChunk, 0);
+        }
+      };
+
+      setTimeout(processChunk, 0);
     };
 
     reader.readAsText(file);
@@ -125,13 +184,13 @@ function App() {
 
   const handleYearChange = (year: string) => {
     setSelectedYears((prev) =>
-      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
+      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year],
     );
   };
 
   const handleStateChange = (state: string) => {
     setSelectedStates((prev) =>
-      prev.includes(state) ? prev.filter((s) => s !== state) : [...prev, state]
+      prev.includes(state) ? prev.filter((s) => s !== state) : [...prev, state],
     );
   };
 
@@ -152,9 +211,13 @@ function App() {
   };
 
   const handleHomeClick = () => {
+    chunkTokenRef.current += 1; // cancel any in-progress loading
     setHeadersFromFile([]);
     setDataFromFile([]);
     setRawData([]);
+    setLoadingMore(false);
+    setLoadedRows(0);
+    setTotalRows(0);
     setSelectedYears([new Date().getFullYear().toString()]);
     setSelectedStates(["mazowieckie"]);
     navigate("/");
@@ -185,7 +248,15 @@ function App() {
           />
           <Route
             path="/data"
-            element={<DataPage headers={headersFromFile} data={dataFromFile} />}
+            element={
+              <DataPage
+                headers={headersFromFile}
+                data={dataFromFile}
+                loadingMore={loadingMore}
+                loadedRows={loadedRows}
+                totalRows={totalRows}
+              />
+            }
           />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/terms" element={<TermsPage />} />

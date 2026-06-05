@@ -8,11 +8,20 @@ import DataTable from "./DataTable";
 interface DataDisplayProps {
   headers: string[];
   data: DataRow[];
+  loadingMore?: boolean;
+  loadedRows?: number;
+  totalRows?: number;
 }
 
-const DataDisplay: React.FC<DataDisplayProps> = ({ headers, data }) => {
+const DataDisplay: React.FC<DataDisplayProps> = ({
+  headers,
+  data,
+  loadingMore,
+  loadedRows,
+  totalRows,
+}) => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(
-    DEFAULT_COLUMNS.filter((col) => headers.includes(col))
+    DEFAULT_COLUMNS.filter((col) => headers.includes(col)),
   );
   const [selectedOrgans, setSelectedOrgans] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] =
@@ -24,7 +33,7 @@ const DataDisplay: React.FC<DataDisplayProps> = ({ headers, data }) => {
     // Default filter: nazwa_zam_budowlanego = 'budynków' if the header exists
     headers.includes("nazwa_zam_budowlanego")
       ? [{ nazwa_zam_budowlanego: "budynków" } as SearchParameter]
-      : []
+      : [],
   );
   const [maxElements, setMaxElements] = useState<number>(100);
   const [availableOrgans, setAvailableOrgans] = useState<string[]>([]);
@@ -67,10 +76,10 @@ const DataDisplay: React.FC<DataDisplayProps> = ({ headers, data }) => {
     const dateKey = headers.includes("data_wplywu_wniosku_do_urzedu")
       ? "data_wplywu_wniosku_do_urzedu"
       : headers.includes("data_wplywu_wniosku")
-      ? "data_wplywu_wniosku"
-      : headers.includes("data_wydania_decyzji")
-      ? "data_wydania_decyzji"
-      : null;
+        ? "data_wplywu_wniosku"
+        : headers.includes("data_wydania_decyzji")
+          ? "data_wydania_decyzji"
+          : null;
 
     const parseDateString = (s: string | undefined | null): Date | null => {
       if (!s) return null;
@@ -163,7 +172,7 @@ const DataDisplay: React.FC<DataDisplayProps> = ({ headers, data }) => {
 
   const uniqueFilteredData = getUniqueByKey(
     filteredData,
-    "numer_decyzji_urzedu"
+    "numer_decyzji_urzedu",
   );
 
   const handleColumnToggle = (column: string) => {
@@ -174,7 +183,7 @@ const DataDisplay: React.FC<DataDisplayProps> = ({ headers, data }) => {
     setSelectedColumns((prev) =>
       prev.includes(column)
         ? prev.filter((c) => c !== column)
-        : [...prev, column]
+        : [...prev, column],
     );
   };
 
@@ -188,6 +197,24 @@ const DataDisplay: React.FC<DataDisplayProps> = ({ headers, data }) => {
 
   return (
     <div className="data-display-container">
+      {loadingMore && (
+        <div className="loading-more-banner">
+          <span className="loading-more-spinner" />
+          Wczytywanie danych:{" "}
+          <strong>{(loadedRows ?? 0).toLocaleString("pl-PL")}</strong> /{" "}
+          <strong>{(totalRows ?? 0).toLocaleString("pl-PL")}</strong> wierszy
+          <div className="loading-more-bar">
+            <div
+              className="loading-more-fill"
+              style={{
+                width: totalRows
+                  ? `${Math.round(((loadedRows ?? 0) / totalRows) * 100)}%`
+                  : "0%",
+              }}
+            />
+          </div>
+        </div>
+      )}
       <FilterSection
         headers={headers}
         selectedColumns={selectedColumns}

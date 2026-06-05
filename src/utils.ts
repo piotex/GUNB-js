@@ -88,6 +88,50 @@ export const parseCSV = (
   return { headers, data };
 };
 
+export const parseCSVHeadersAndSeparator = (
+  firstLine: string,
+): { headers: string[]; separator: string } => {
+  const separator = detectSeparator(firstLine);
+  const rawHeaders = parseCSVLine(firstLine, separator);
+
+  const headerCount: { [key: string]: number } = {};
+  for (const header of rawHeaders) {
+    headerCount[header] = (headerCount[header] || 0) + 1;
+  }
+
+  const headers: string[] = [];
+  const currentCount: { [key: string]: number } = {};
+  for (const header of rawHeaders) {
+    currentCount[header] = (currentCount[header] || 0) + 1;
+    headers.push(
+      headerCount[header] > 1 ? `${header}_${currentCount[header]}` : header,
+    );
+  }
+
+  return { headers, separator };
+};
+
+export const parseCSVBatch = (
+  lines: string[],
+  startIdx: number,
+  count: number,
+  headers: string[],
+  separator: string,
+): DataRow[] => {
+  const data: DataRow[] = [];
+  const end = Math.min(startIdx + count, lines.length);
+  for (let i = startIdx; i < end; i++) {
+    if (!lines[i].trim()) continue;
+    const cells = parseCSVLine(lines[i], separator);
+    const obj: DataRow = {};
+    for (let j = 0; j < headers.length; j++) {
+      obj[headers[j]] = cells[j] || "";
+    }
+    data.push(obj);
+  }
+  return data;
+};
+
 export const sortDataByDate = (
   data: DataRow[],
   headers: string[],
