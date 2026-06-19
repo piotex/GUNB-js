@@ -11,6 +11,7 @@ import {
   getStateFromItem,
 } from "./utils";
 import { CHECKBOXES_YEARS, POSIBLE_ORGANS } from "./constants";
+import { loadPostalCSV } from "./geocoding";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import LoadingOverlay from "./components/LoadingOverlay";
@@ -31,9 +32,8 @@ function App() {
   const [headersFromFile, setHeadersFromFile] = useState<string[]>([]);
   const [dataFromFile, setDataFromFile] = useState<DataRow[]>([]);
   const [rawData, setRawData] = useState<DataRow[]>([]); // Store unfiltered data
-  const [selectedYears, setSelectedYears] = useState<string[]>([
-    new Date().getFullYear().toString(),
-  ]);
+  const [selectedYears, setSelectedYears] =
+    useState<string[]>(CHECKBOXES_YEARS);
   const [selectedStates, setSelectedStates] = useState<string[]>([
     "mazowieckie",
   ]);
@@ -83,6 +83,19 @@ function App() {
     return sortDataByDate(filteredData, headers);
   };
 
+  // Load postal codes from bundled CSV on startup
+  useEffect(() => {
+    fetch("/kody_pocztowe.csv")
+      .then((r) => r.text())
+      .then((text) => {
+        const count = loadPostalCSV(text);
+        console.log(`Wczytano ${count} kodów pocztowych z kody_pocztowe.csv`);
+      })
+      .catch(() => {
+        /* plik opcjonalny — brak nie jest błędem */
+      });
+  }, []);
+
   // Re-filter data when filters change
   useEffect(() => {
     if (rawData.length > 0 && headersFromFile.length > 0) {
@@ -117,7 +130,7 @@ function App() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const csvData = e.target?.result as string;
-      const lines = csvData.split("\n");
+      const lines = csvData.split(/\r?\n/);
 
       if (lines.length < 2) {
         setLoading(false);

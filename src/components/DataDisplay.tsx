@@ -32,9 +32,9 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
     string[]
   >([]);
   const [searchParameters, setSearchParameters] = useState<SearchParameter[]>(
-    // Default filter: nazwa_zam_budowlanego = 'budynków' if the header exists
+    // Default filter: nazwa_zam_budowlanego contains 'budynek' or 'budynków' if the header exists
     headers.includes("nazwa_zam_budowlanego")
-      ? [{ nazwa_zam_budowlanego: "budynków" } as SearchParameter]
+      ? [{ nazwa_zam_budowlanego: "budynek|budynków" } as SearchParameter]
       : [],
   );
   const [maxElements, setMaxElements] = useState<number>(100);
@@ -42,8 +42,8 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
   const [availableNazwaZamierzenia, setAvailableNazwaZamierzenia] = useState<
     string[]
   >([]);
-  const [dateFrom, setDateFrom] = useState<string | null>("2020-01-01");
-  const [dateTo, setDateTo] = useState<string | null>("2023-12-31");
+  const [dateFrom, setDateFrom] = useState<string | null>(null);
+  const [dateTo, setDateTo] = useState<string | null>(null);
   const [postalCodeFilter, setPostalCodeFilter] = useState<string>("");
   const [showMap, setShowMap] = useState(false);
   const [postalVersion, setPostalVersion] = useState(0);
@@ -55,14 +55,21 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
   const cityKey = headers.includes("miasto") ? "miasto" : "";
   const POSTAL_COL = "_kod_pocztowy";
 
+  const voivKey = headers.includes("wojewodztwo") ? "wojewodztwo" : "";
+
   const enrichedData = useMemo<DataRow[]>(() => {
     return data.map((row) => {
       const city = cityKey ? (row[cityKey] || "").trim() : "";
-      const postal = city ? postalByCity.get(city) || "" : "";
+      const voiv = voivKey ? (row[voivKey] || "").trim() : "";
+      const postal = city
+        ? (voiv ? postalByCity.get(`${city}|${voiv}`) : undefined) ??
+          postalByCity.get(city) ??
+          ""
+        : "";
       return { ...row, [POSTAL_COL]: postal };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, cityKey, postalVersion]);
+  }, [data, cityKey, voivKey, postalVersion]);
 
   const displayHeaders = useMemo<string[]>(() => {
     if (!cityKey || headers.includes(POSTAL_COL)) return headers;
@@ -152,7 +159,7 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
       }
 
       // Filter by organs
-      const organ = item["nazwa_organu"];
+      const organ = (item["nazwa_organu"] || "").trim();
       if (organ && !selectedOrgans.includes(organ)) {
         return false;
       }
@@ -163,11 +170,17 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
         return false;
       }
 
-      // Filter by search parameters
+      // Filter by search parameters (| separates OR alternatives)
       for (const param of searchParameters) {
         const key = Object.keys(param)[0];
         const value = param[key];
-        if (!item[key] || !item[key].includes(value)) {
+        const fieldVal = item[key] || "";
+        const alternatives = value
+          .split("|")
+          .map((v) => v.trim())
+          .filter(Boolean);
+        const anyMatch = alternatives.some((alt) => fieldVal.includes(alt));
+        if (!anyMatch) {
           return false;
         }
       }
@@ -195,8 +208,8 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
             if (toDate && itemDate > toDate) return false;
           }
         } else {
-          // If we couldn't parse item date, exclude it to be safe
-          return false;
+          // If date can't be parsed, skip date filter for this record
+          // (don't exclude — missing/malformed dates should still be visible)
         }
       }
 
@@ -409,6 +422,27 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
           </button>
           {cityKey && (
             <>
+              <button
+                className="btn btn-sm"
+                style={{
+                  background: isEnriching ? "#6b7280" : "#7c3aed",
+                  color: "#fff",
+                  borderColor: isEnriching ? "#4b5563" : "#5b21b6",
+                }}
+                onClick={
+                  isEnriching
+                    ? () => {
+                        enrichCancelRef.current++;
+                        setIsEnriching(false);
+                      }
+                    : handleEnrich
+                }
+                title="Pobiera kody pocztowe z OpenStreetMap (Nominatim) dla widocznych miast. Może nie działać na localhost."
+              >
+                {isEnriching
+                  ? "⏳ Anuluj geocoding"
+                  : "📍 Pobierz kody pocztowe"}
+              </button>
               <button
                 className="btn btn-sm"
                 style={{

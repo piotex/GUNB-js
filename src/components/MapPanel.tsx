@@ -3,6 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { DataRow } from "../types";
 import { geocodeCity, getCached, isCached, postalByCity } from "../geocoding";
+import RowDetailsModal from "./RowDetailsModal";
 
 function createIcon(count: number, selected: boolean): L.DivIcon {
   const bg = selected ? "#dc2626" : "#2563eb";
@@ -28,7 +29,6 @@ interface MapPanelProps {
   data: DataRow[];
   headers: string[];
   onClose: () => void;
-}
 }
 
 const MapPanel: React.FC<MapPanelProps> = ({ data, headers, onClose }) => {

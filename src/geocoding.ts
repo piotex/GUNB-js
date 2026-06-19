@@ -103,10 +103,24 @@ export function loadPostalCSV(text: string): number {
     const parts = raw.split(";");
     if (parts.length < 2) continue;
     const city = parts[0].trim();
-    const code = parts[1].trim();
     if (!city) continue;
+
+    let voiv = "";
+    let code = "";
+    if (parts.length >= 3 && /^\d{2}-\d{3}$/.test(parts[2].trim())) {
+      // format: Miejscowość;Województwo;XX-XXX
+      voiv = parts[1].trim();
+      code = parts[2].trim();
+    } else {
+      // format: Miejscowość;XX-XXX
+      code = parts[1].trim();
+    }
     if (!/^\d{2}-\d{3}$/.test(code)) continue;
-    postalByCity.set(city, code);
+
+    if (voiv) {
+      postalByCity.set(`${city}|${voiv}`, code); // klucz złożony
+    }
+    postalByCity.set(city, code); // fallback bez województwa
     loaded++;
   }
   return loaded;

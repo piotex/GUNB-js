@@ -48,24 +48,9 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   );
   const [newParamKey, setNewParamKey] = React.useState(headers[0] || "");
   const [newParamValue, setNewParamValue] = React.useState("");
-  // default dateFrom = 3 months ago, dateTo = today
-  const now = new Date();
-  const threeMonthsAgo = new Date(now);
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-  const yyyyFrom = threeMonthsAgo.getFullYear();
-  const mmFrom = String(threeMonthsAgo.getMonth() + 1).padStart(2, "0");
-  const ddFrom = String(threeMonthsAgo.getDate()).padStart(2, "0");
-  const threeMonthsAgoStr = `${yyyyFrom}-${mmFrom}-${ddFrom}`;
 
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  const todayStr = `${yyyy}-${mm}-${dd}`;
-
-  const [dateFrom, setDateFrom] = React.useState<string | null>(
-    threeMonthsAgoStr,
-  );
-  const [dateTo, setDateTo] = React.useState<string | null>(todayStr);
+  const [dateFrom, setDateFrom] = React.useState<string | null>(null);
+  const [dateTo, setDateTo] = React.useState<string | null>(null);
 
   const [postalCode, setPostalCode] = React.useState("");
   const [postalHelpOpen, setPostalHelpOpen] = React.useState(false);
@@ -512,7 +497,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                   type="text"
                   value={newParamValue}
                   onChange={(e) => setNewParamValue(e.target.value)}
-                  placeholder="Wartość filtru..."
+                  placeholder="Wartość (| = LUB, np. budynek|dom)"
                   className="form-control"
                 />
               </td>

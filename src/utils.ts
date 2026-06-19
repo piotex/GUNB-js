@@ -121,8 +121,9 @@ export const parseCSVBatch = (
   const data: DataRow[] = [];
   const end = Math.min(startIdx + count, lines.length);
   for (let i = startIdx; i < end; i++) {
-    if (!lines[i].trim()) continue;
-    const cells = parseCSVLine(lines[i], separator);
+    const line = lines[i].replace(/\r$/, "");
+    if (!line.trim()) continue;
+    const cells = parseCSVLine(line, separator);
     const obj: DataRow = {};
     for (let j = 0; j < headers.length; j++) {
       obj[headers[j]] = cells[j] || "";
