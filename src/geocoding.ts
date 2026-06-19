@@ -11,13 +11,20 @@ const inFlight = new Map<string, Array<(r: GeoResult | null) => void>>();
 /** cityName → postcode — exported so any component can read it */
 export const postalByCity: Map<string, string> = new Map();
 
-export function isCached(city: string): boolean {
-  return cache.has(city);
+const makeCityKey = (city: string, voiv?: string) =>
+  voiv ? `${city}|${voiv}` : city;
+
+export function isCached(city: string, voiv?: string): boolean {
+  return cache.has(makeCityKey(city, voiv));
 }
 
-export function getCached(city: string): GeoResult | null | undefined {
-  if (!cache.has(city)) return undefined;
-  return cache.get(city)!;
+export function getCached(
+  city: string,
+  voiv?: string,
+): GeoResult | null | undefined {
+  const key = makeCityKey(city, voiv);
+  if (!cache.has(key)) return undefined;
+  return cache.get(key)!;
 }
 
 /**
@@ -27,16 +34,20 @@ export function getCached(city: string): GeoResult | null | undefined {
  */
 let queueTail: Promise<void> = Promise.resolve();
 
-export async function geocodeCity(city: string): Promise<GeoResult | null> {
-  if (cache.has(city)) return cache.get(city)!;
+export async function geocodeCity(
+  city: string,
+  voiv?: string,
+): Promise<GeoResult | null> {
+  const key = makeCityKey(city, voiv);
+  if (cache.has(key)) return cache.get(key)!;
 
   // Deduplicate: if already queued, share the result
-  if (inFlight.has(city)) {
+  if (inFlight.has(key)) {
     return new Promise((resolve) => {
-      inFlight.get(city)!.push(resolve);
+      inFlight.get(key)!.push(resolve);
     });
   }
-  inFlight.set(city, []);
+  inFlight.set(key, []);
 
   // Extend the global queue
   const myTurn = queueTail;
@@ -48,10 +59,10 @@ export async function geocodeCity(city: string): Promise<GeoResult | null> {
   await myTurn; // wait for previous request + its delay
 
   // Re-check cache — another call may have filled it while we were waiting
-  if (!cache.has(city)) {
+  if (!cache.has(key)) {
     let result: GeoResult | null = null;
     try {
-      const q = encodeURIComponent(`${city}, Polska`);
+      const q = encodeURIComponent(`${city}${voiv ? ", " + voiv : ""}, Polska`);
       const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=pl&addressdetails=1`;
       const res = await fetch(url, { headers: { "Accept-Language": "pl,en" } });
       if (res.ok) {
@@ -66,18 +77,23 @@ export async function geocodeCity(city: string): Promise<GeoResult | null> {
             lng: parseFloat(json[0].lon),
             postcode: json[0].address?.postcode ?? null,
           };
-          if (result.postcode) postalByCity.set(city, result.postcode);
+          if (result.postcode) {
+            postalByCity.set(key, result.postcode);
+            // set fallback only if city-only key doesn't exist
+            if (!postalByCity.has(city))
+              postalByCity.set(city, result.postcode);
+          }
         }
       }
     } catch {
       /* network/CORS error — result stays null */
     }
-    cache.set(city, result);
+    cache.set(key, result);
   }
 
-  const finalResult = cache.get(city) as GeoResult | null;
-  const waiters = inFlight.get(city) ?? [];
-  inFlight.delete(city);
+  const finalResult = cache.get(key) as GeoResult | null;
+  const waiters = inFlight.get(key) ?? [];
+  inFlight.delete(key);
   waiters.forEach((cb) => cb(finalResult));
 
   // Throttle: allow next request only after 1.15 s

@@ -2,7 +2,12 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { DataRow, SearchParameter } from "../types";
 import { POSIBLE_CATEGORIES, DEFAULT_COLUMNS } from "../constants";
 import { getNazwaZamierzeniaKey } from "../utils";
-import { geocodeCity, postalByCity, loadPostalCSV } from "../geocoding";
+import {
+  geocodeCity,
+  postalByCity,
+  loadPostalCSV,
+  isCached,
+} from "../geocoding";
 import FilterSection from "./FilterSection";
 import DataTable from "./DataTable";
 import MapPanel from "./MapPanel";
@@ -48,6 +53,9 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
   const [showMap, setShowMap] = useState(false);
   const [postalVersion, setPostalVersion] = useState(0);
   const [isEnriching, setIsEnriching] = useState(false);
+  const [showUnique, setShowUnique] = useState<boolean>(false);
+  const [showWithoutDecision, setShowWithoutDecision] =
+    useState<boolean>(false);
   const enrichCancelRef = useRef(0);
   const postalCsvInputRef = useRef<HTMLInputElement>(null);
   const filteredDataRef = useRef<DataRow[]>([]);
@@ -62,9 +70,9 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
       const city = cityKey ? (row[cityKey] || "").trim() : "";
       const voiv = voivKey ? (row[voivKey] || "").trim() : "";
       const postal = city
-        ? (voiv ? postalByCity.get(`${city}|${voiv}`) : undefined) ??
+        ? ((voiv ? postalByCity.get(`${city}|${voiv}`) : undefined) ??
           postalByCity.get(city) ??
-          ""
+          "")
         : "";
       return { ...row, [POSTAL_COL]: postal };
     });
@@ -213,6 +221,13 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
         }
       }
 
+      // Filter: only rows without a decision
+      if (showWithoutDecision) {
+        const decNum = (item["numer_decyzji_urzedu"] || "").trim();
+        const decDate = (item["data_wydania_decyzji"] || "").trim();
+        if (decNum || decDate) return false;
+      }
+
       return true;
     });
   };
@@ -224,8 +239,6 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
     [POSTAL_COL]:
       "Kolumna obliczana automatycznie — wartość pobierana na podstawie pola „Miasto” z każdego wiersza za pomocą geokodowania (Nominatim / OpenStreetMap). Kliknij „📍 Pobierz kody pocztowe‟, aby ją wypełnić. Możesz też załadować własną listę kodow przez „📂 Importuj kody z CSV‟.",
   };
-
-  const [showUnique, setShowUnique] = useState<boolean>(false);
 
   const getUniqueByKey = (rows: DataRow[], key: string) => {
     const seen = new Set<string>();
@@ -273,18 +286,24 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
     const token = ++enrichCancelRef.current;
     setIsEnriching(true);
 
-    const cities = Array.from(
-      new Set(
-        filteredDataRef.current
-          .map((r) => (r[cityKey] || "").trim())
-          .filter(Boolean),
-      ),
-    );
-    const pending = cities.filter((c) => !postalByCity.has(c));
+    const map = new Map<string, { city: string; voiv: string }>();
+    filteredDataRef.current.forEach((r) => {
+      const city = (r[cityKey] || "").trim();
+      const voiv = (r[voivKey] || "").trim();
+      if (!city) return;
+      const key = `${city}|${voiv}`;
+      if (!map.has(key)) map.set(key, { city, voiv });
+    });
 
-    for (const city of pending) {
+    const entries = Array.from(map.values());
+    const pending = entries.filter(
+      (e) =>
+        !postalByCity.has(`${e.city}|${e.voiv}`) && !isCached(e.city, e.voiv),
+    );
+
+    for (const e of pending) {
       if (enrichCancelRef.current !== token) break;
-      await geocodeCity(city); // queue + throttle handled inside geocoding.ts
+      await geocodeCity(e.city, e.voiv); // queue + throttle handled inside geocoding.ts
       setPostalVersion((v) => v + 1);
     }
 
@@ -393,6 +412,20 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
             marginBottom: "10px",
           }}
         >
+          <button
+            className={`btn btn-sm ${showWithoutDecision ? "btn-warning" : ""}`}
+            onClick={() => setShowWithoutDecision((s) => !s)}
+            style={{
+              backgroundColor: showWithoutDecision ? undefined : "#e2e8f0",
+              color: "#000",
+              borderColor: showWithoutDecision ? undefined : "#94a3b8",
+            }}
+            title="Pokaż wnioski, które nie mają jeszcze wydanej decyzji (puste numer_decyzji_urzedu i data_wydania_decyzji)"
+          >
+            {showWithoutDecision
+              ? "Pokaż wszystkie (z i bez decyzji)"
+              : "Pokaż tylko bez decyzji"}
+          </button>
           <button
             className={`btn btn-sm ${showUnique ? "btn-primary" : ""}`}
             onClick={() => setShowUnique((s) => !s)}

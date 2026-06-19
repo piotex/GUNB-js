@@ -21,12 +21,14 @@ const DataPage: React.FC<DataPageProps> = ({
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (data.length === 0) {
+    // If there are no data rows, only redirect to home when not loading more.
+    if (data.length === 0 && !loadingMore) {
       navigate("/");
     }
-  }, [data, navigate]);
+  }, [data, loadingMore, navigate]);
 
-  if (data.length === 0) {
+  // While loadingMore is true we still render the page so the progress banner is visible.
+  if (data.length === 0 && !loadingMore) {
     return null;
   }
 

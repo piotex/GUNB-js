@@ -3,7 +3,6 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import "./App.css";
 import { DataRow } from "./types";
 import {
-  parseCSV,
   parseCSVHeadersAndSeparator,
   parseCSVBatch,
   sortDataByDate,
@@ -32,8 +31,9 @@ function App() {
   const [headersFromFile, setHeadersFromFile] = useState<string[]>([]);
   const [dataFromFile, setDataFromFile] = useState<DataRow[]>([]);
   const [rawData, setRawData] = useState<DataRow[]>([]); // Store unfiltered data
-  const [selectedYears, setSelectedYears] =
-    useState<string[]>(CHECKBOXES_YEARS);
+  const [selectedYears, setSelectedYears] = useState<string[]>([
+    String(new Date().getFullYear()),
+  ]);
   const [selectedStates, setSelectedStates] = useState<string[]>([
     "mazowieckie",
   ]);
@@ -49,15 +49,15 @@ function App() {
       const year = getYearFromItem(item, headers);
       const state = getStateFromItem(item, headers);
 
-      if (!year || !state) {
+      if (!state) {
         rejectedRows.push({
           index: index + 2,
-          reason: `Missing year (${year}) or state (${state})`,
+          reason: `Missing state`,
           data: item,
         });
         return false;
       }
-      if (!selectedYears.includes(year)) {
+      if (year && !selectedYears.includes(year)) {
         rejectedRows.push({
           index: index + 2,
           reason: `Year ${year} not in selected years`,
@@ -96,6 +96,13 @@ function App() {
       });
   }, []);
 
+  // Logowanie zaznaczonych checkboxów (stałe)
+  useEffect(() => {
+    console.log("=== AKTYWNE FILTRY ===");
+    console.log("Zaznaczone lata:", selectedYears);
+    console.log("Zaznaczone województwa:", selectedStates);
+  }, [selectedYears, selectedStates]);
+
   // Re-filter data when filters change
   useEffect(() => {
     if (rawData.length > 0 && headersFromFile.length > 0) {
@@ -107,6 +114,7 @@ function App() {
         setLoading(false);
       }, 100);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYears, selectedStates]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,6 +150,14 @@ function App() {
       const capturedStates = [...selectedStates];
       const lineCount = lines.length - 1;
 
+      console.log("=== WCZYTYWANIE PLIKU ===");
+      console.log("Plik:", file.name);
+      console.log("Separator:", JSON.stringify(separator));
+      console.log("Nagłówki:", headers);
+      console.log("Liczba linii:", lineCount);
+      console.log("Filtry (capture) — lata:", capturedYears);
+      console.log("Filtry (capture) — województwa:", capturedStates);
+
       setHeadersFromFile(headers);
       setRawData([]);
       setDataFromFile([]);
@@ -154,17 +170,35 @@ function App() {
       let idx = 1;
       const accRaw: DataRow[] = [];
 
-      const filterBatch = (data: DataRow[]) =>
-        data.filter((item) => {
+      const filterBatch = (data: DataRow[], isFinal = false) => {
+        const accepted: DataRow[] = [];
+        const rejectedSamples: { state: string; year: string }[] = [];
+        for (const item of data) {
           const year = getYearFromItem(item, headers);
           const state = getStateFromItem(item, headers);
-          return (
-            year &&
-            state &&
-            capturedYears.includes(year) &&
-            capturedStates.includes(state)
+          const passes =
+            !!state &&
+            (!year || capturedYears.includes(year)) &&
+            capturedStates.includes(state);
+          if (passes) {
+            accepted.push(item);
+          } else if (isFinal && rejectedSamples.length < 10) {
+            rejectedSamples.push({
+              state: state || "(brak)",
+              year: year || "(brak)",
+            });
+          }
+        }
+        if (isFinal) {
+          console.log(
+            `filterBatch (final): zaakceptowano ${accepted.length} / ${data.length}`,
           );
-        });
+          if (rejectedSamples.length > 0) {
+            console.log("Przykłady odrzuconych (stan/rok):", rejectedSamples);
+          }
+        }
+        return accepted;
+      };
 
       const processChunk = () => {
         if (chunkTokenRef.current !== myToken) return; // cancelled
@@ -176,7 +210,19 @@ function App() {
         const isDone = idx >= lines.length;
 
         if (isDone) {
-          const filtered = filterBatch(accRaw);
+          console.log("=== PLIK W CAŁOŚCI WCZYTANY ===");
+          console.log("Wszystkich wierszy (raw):", accRaw.length);
+          const uniqueStates = Array.from(
+            new Set(
+              accRaw.map((r) => getStateFromItem(r, headers) || "(brak)"),
+            ),
+          );
+          console.log("Unikalne województwa w pliku:", uniqueStates);
+          const uniqueYears = Array.from(
+            new Set(accRaw.map((r) => getYearFromItem(r, headers) || "(brak)")),
+          );
+          console.log("Unikalne lata w pliku:", uniqueYears);
+          const filtered = filterBatch(accRaw, true);
           const sorted = sortDataByDate(filtered, headers);
           setRawData(accRaw);
           setDataFromFile(sorted);

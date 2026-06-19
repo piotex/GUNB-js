@@ -1,5 +1,13 @@
 import { DataRow } from "./types";
 
+export const MISSING_DATE_LABEL = "BRAK DATY";
+
+const DATE_COLUMNS = [
+  "data_wplywu_wniosku",
+  "data_wplywu_wniosku_do_urzedu",
+  "data_wydania_decyzji",
+];
+
 const detectSeparator = (firstLine: string): string => {
   const candidates = ["#", ";", ",", "\t"];
   let best = "#";
@@ -81,6 +89,11 @@ export const parseCSV = (
     for (let j = 0; j < headers.length; j++) {
       obj[headers[j]] = cells[j] || "";
     }
+    for (const col of DATE_COLUMNS) {
+      if (headers.includes(col) && !obj[col]?.trim()) {
+        obj[col] = MISSING_DATE_LABEL;
+      }
+    }
 
     data.push(obj);
   }
@@ -128,6 +141,11 @@ export const parseCSVBatch = (
     for (let j = 0; j < headers.length; j++) {
       obj[headers[j]] = cells[j] || "";
     }
+    for (const col of DATE_COLUMNS) {
+      if (headers.includes(col) && !obj[col]?.trim()) {
+        obj[col] = MISSING_DATE_LABEL;
+      }
+    }
     data.push(obj);
   }
   return data;
@@ -141,11 +159,13 @@ export const sortDataByDate = (
     ? "data_wplywu_wniosku_do_urzedu"
     : "data_wplywu_wniosku";
 
-  return [...data].sort((a, b) => {
-    const dateA = new Date(a[key]?.substring(0, 10) || "");
-    const dateB = new Date(b[key]?.substring(0, 10) || "");
-    return dateB.getTime() - dateA.getTime();
-  });
+  const toSortKey = (val: string | undefined): number => {
+    if (!val || val === MISSING_DATE_LABEL) return 0; // sort to end (descending)
+    const d = new Date(val.substring(0, 10));
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+
+  return [...data].sort((a, b) => toSortKey(b[key]) - toSortKey(a[key]));
 };
 
 export const getYearFromItem = (item: DataRow, headers: string[]): string => {

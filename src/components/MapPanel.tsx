@@ -22,6 +22,7 @@ function createIcon(count: number, selected: boolean): L.DivIcon {
 interface CityGroup {
   key: string;
   city: string;
+  voiv: string;
   rows: DataRow[];
 }
 
@@ -58,7 +59,7 @@ const MapPanel: React.FC<MapPanelProps> = ({ data, headers, onClose }) => {
       if (!city) continue;
       const voiv = (row[voivKey] || "").trim();
       const key = `${city}|||${voiv}`;
-      if (!map.has(key)) map.set(key, { key, city, rows: [] });
+      if (!map.has(key)) map.set(key, { key, city, voiv, rows: [] });
       map.get(key)!.rows.push(row);
     }
     return Array.from(map.values()).sort(
@@ -93,7 +94,7 @@ const MapPanel: React.FC<MapPanelProps> = ({ data, headers, onClose }) => {
     if (groups.length === 0) return;
     cancelRef.current = false;
 
-    const pending = groups.filter((g) => !isCached(g.city));
+    const pending = groups.filter((g) => !isCached(g.city, g.voiv));
 
     // Immediately show already-cached markers
     setMarkerVersion((v) => v + 1);
@@ -106,7 +107,7 @@ const MapPanel: React.FC<MapPanelProps> = ({ data, headers, onClose }) => {
     (async () => {
       for (const g of pending) {
         if (cancelRef.current) return;
-        await geocodeCity(g.city);
+        await geocodeCity(g.city, g.voiv);
         done++;
         setGeocodingStatus(
           done < pending.length ? `${done} / ${pending.length}` : null,
@@ -121,11 +122,13 @@ const MapPanel: React.FC<MapPanelProps> = ({ data, headers, onClose }) => {
     const map = mapRef.current;
     if (!map) return;
     for (const g of groups) {
-      const geo = getCached(g.city);
+      const geo = getCached(g.city, g.voiv);
       if (geo === undefined) continue; // not geocoded yet
       const isSelected = selectedKey === g.key;
       const existing = markersRef.current.get(g.key);
-      const postcode = postalByCity.get(g.city);
+      const compositeKey = `${g.city}|${g.voiv}`;
+      const postcode =
+        postalByCity.get(compositeKey) ?? postalByCity.get(g.city);
       const tooltipText = postcode
         ? `${g.city} (${g.rows.length}) \u2022 ${postcode}`
         : `${g.city} (${g.rows.length})`;
