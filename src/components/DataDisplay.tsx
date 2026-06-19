@@ -53,7 +53,7 @@ const DataDisplay: React.FC<DataDisplayProps> = ({
   const [showMap, setShowMap] = useState(false);
   const [postalVersion, setPostalVersion] = useState(0);
   const [isEnriching, setIsEnriching] = useState(false);
-  const [showUnique, setShowUnique] = useState<boolean>(false);
+  const [showUnique, setShowUnique] = useState<boolean>(true);
   const [showWithoutDecision, setShowWithoutDecision] =
     useState<boolean>(false);
   const enrichCancelRef = useRef(0);
